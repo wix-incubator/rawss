@@ -1,0 +1,10 @@
+{
+    "src": ["src/**/*.ts", "ts/refs.d.ts"],
+    "compilerOptions": {
+      "module": "commonjs",
+      "target": "es6",
+      "baseUrl": ".",
+      "declaration": false
+    }
+  }
+  

@@ -1,0 +1,2 @@
+--require ts-node/register -r tsconfig-paths/register
+test/**/*.unit.ts

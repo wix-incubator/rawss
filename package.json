@@ -19,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/wix/p6l/issues"
   },
-  "homepage": "https://github.com/wix/p6l#readme"
+  "homepage": "https://github.com/wix/p6l#readme",
+  "devDependencies": {
+    "@types/mocha": "^2.2.46",
+    "chai": "^4.1.2",
+    "mocha-typescript": "^1.1.12",
+    "ts-loader": "^3.2.0",
+    "tsconfig-paths": "^3.1.1"
+  }
 }
