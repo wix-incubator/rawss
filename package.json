@@ -4,11 +4,12 @@
   "description": "Framework for CSS polyfills",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "dev": "webpack-dev-server"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/wix/p6l.git"
+    "url": "git+ssh://git@github.com/wix/lefil.git"
   },
   "keywords": [
     "polyfill",
@@ -17,14 +18,27 @@
   "author": "noamr@wix.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wix/p6l/issues"
+    "url": "https://github.com/wix/lefil/issues"
   },
-  "homepage": "https://github.com/wix/p6l#readme",
+  "homepage": "https://github.com/wix/lefill#readme",
   "devDependencies": {
     "@types/mocha": "^2.2.46",
+    "@types/node": "^9.3.0",
+    "@types/puppeteer": "^0.13.9",
     "chai": "^4.1.2",
+    "mocha": "^5.0.0",
     "mocha-typescript": "^1.1.12",
+    "puppeteer": "^1.0.0",
     "ts-loader": "^3.2.0",
-    "tsconfig-paths": "^3.1.1"
+    "ts-node": "^4.1.0",
+    "tsconfig-paths": "^3.1.1",
+    "typescript": "^2.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.11.0",
+    "webpack-watch-server": "^1.2.1"
+  },
+  "dependencies": {
+    "css-specificity": "^0.1.0",
+    "shortid": "^2.2.8"
   }
 }

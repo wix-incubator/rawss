@@ -58,3 +58,6 @@ typings/
 .env
 
 yarn.lock
+.DS_Store
+dist/
+package-lock.json

@@ -3,11 +3,14 @@
 const path = require('path');
 
 module.exports = {
-    entry: path.resolve('src/mesh.ts'),
+    entry: {
+        lefil: path.resolve('src/lefil.ts'),
+        domUtils: path.resolve('src/domUtils.ts')
+    },
     output: {
         filename: '[name].js',
         path: path.join(__dirname, 'dist'),
-        libraryTarget: 'amd'
+        libraryTarget: 'umd'
     },
     devtool: 'source-map',
     resolve: {
@@ -17,13 +20,12 @@ module.exports = {
     module: {
         loaders: [
             // all files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'
-            { test: /\.ts$/, exclude: __dirname + '/', loader: 'ts-loader?'+JSON.stringify({
+            { test: /src\/.*\.ts$/, loader: 'ts-loader?'+JSON.stringify({
                 compilerOptions: {
                     lib: ['es5', 'ES2015.Promise', 'DOM'],
-                    types: ['node'],
+                    types: ['node', 'mocha'],
                     target: 'es5'
-                },
-                libraryTarget: 'umd'
+                }
             })}
         ]
     },
