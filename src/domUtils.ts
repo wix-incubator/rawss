@@ -26,3 +26,7 @@ export function getAllRulesInDocument(document: HTMLDocument) : StyleRule[] {
 export function getRawComputedStyle(rules: StyleRule[], element: HTMLElement) : {[name: string]: string} {
     return rules.reduce((style, rule: StyleRule) => style[rule.name] || !doesRuleApply(element, rule) ? style : {...style, [rule.name]: rule.value}, {})
 }
+
+export function getMatchingElements(document: HTMLDocument, rule: StyleRule)  : HTMLElement[] {
+    return typeof(rule.selector) === 'string' ? [].slice.call(document.querySelectorAll(rule.selector)) : [<HTMLElement>rule.selector]
+}

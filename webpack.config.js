@@ -22,7 +22,7 @@ module.exports = {
             // all files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'
             { test: /src\/.*\.ts$/, loader: 'ts-loader?'+JSON.stringify({
                 compilerOptions: {
-                    lib: ['es5', 'ES2015.Promise', 'DOM'],
+                    lib: ['es6', 'ES2015.Promise', 'DOM'],
                     types: ['node', 'mocha'],
                     target: 'es5'
                 }
