@@ -7,6 +7,7 @@ import { StyleRule } from 'src/cssUtils';
 const doesRuleApply = domUtils.doesRuleApply
 const parseInlineStyle = domUtils.parseInlineStyle
 const getAllRulesInDocument = domUtils.getAllRulesInDocument
+const getRawComputedStyle = domUtils.getRawComputedStyle
 describe('domUtils', () => {
     let browser = null;
     let page : Page = null;
@@ -119,6 +120,30 @@ describe('domUtils', () => {
             `)
             const rules = await page.evaluate(() => getAllRulesInDocument(document))
             expect(rules.map(r => r.value)).to.deep.equal(['sheker', 'bar', 'abc', '--123'])
+        })
+    })
+
+    describe('get raw computed style', () => {
+        it('should return the first rule for each prop', async () => {
+            await page.setContent(`
+            <head>
+                <style>* {bla: 976}</style>
+                <style>* {bla: --123}; .bla {foo: 123}</style>
+                <style>#test {foo:bar /*ok: not*/}</style>
+                <style>#test2 {a:bar /*ok: not*/}</style>
+            </head>
+            <body>
+                <div id="test" class="bla" style="height: sheker"></div>
+                <style>.bla {width: 100px}</style>
+            </body>
+            `)
+
+            const style = await page.$eval('#test', element => {
+                    const rules = getAllRulesInDocument(document)
+                    return getRawComputedStyle(rules, <HTMLElement>element)
+                })
+            
+            expect(style).to.deep.equal({height: 'sheker', foo: 'bar', width: '100px', bla: '--123'})
         })
     })
 })

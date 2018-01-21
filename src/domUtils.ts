@@ -22,3 +22,7 @@ export function getAllRulesInDocument(document: HTMLDocument) : StyleRule[] {
     const styleTags = [].slice.call(document.querySelectorAll('style')).reverse().reduce((agg, e) => [...agg, ...parseStylesheet(e.innerHTML)], [])
     return [...inlineStyleRules, ...sortRulesBySpecificFirst(styleTags)]
 }
+
+export function getRawComputedStyle(rules: StyleRule[], element: HTMLElement) : {[name: string]: string} {
+    return rules.reduce((style, rule: StyleRule) => style[rule.name] || !doesRuleApply(element, rule) ? style : {...style, [rule.name]: rule.value}, {})
+}
