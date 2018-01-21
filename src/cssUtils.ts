@@ -51,10 +51,6 @@ export function parseDeclaration(rawCss: string) : StyleDeclaration {
 }
 
 export function parseStylesheet(rawCss: string) : StyleRule[] {
-    if (rawCss.match(/\/\*\s*lefil-system-style\s*\*\//)) {
-        return []
-    }
-
     const css = clearComments(rawCss)
     const ruleRegex = /([^{}]+){([^{}]+)}/
     let index = 0

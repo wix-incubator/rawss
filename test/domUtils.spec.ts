@@ -107,6 +107,18 @@ describe('domUtils', () => {
             const rules = await page.evaluate(() => getAllRulesInDocument(document))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
         })
+        
+        it('should filter out rules from managed style tags', async() => {
+            await page.setContent(`
+            <head>
+                <style id="something">* {bla: --456}</style>
+                <style>* {bla: --123}</style>
+            </head>
+            `)
+            const rules = await page.evaluate(() => getAllRulesInDocument(document, e => e.getAttribute('id') !== 'something'))
+            expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
+        })
+        
         it('should get rules from different origins in the correct order', async() => {
             await page.setContent(`
             <head>

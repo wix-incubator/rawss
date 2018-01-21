@@ -67,9 +67,6 @@ describe('cssUtils', () => {
         it ('should parse several rules', () => {
             expect(parseStylesheet('* {foo: 1} abc {123: true}')).to.deep.equal([{name: 'foo', value: '1', selector: '*'}, {name: '123', value: 'true', selector: 'abc'}])            
         })
-        it ('should ignore system stylesheet', () => {
-            expect(parseStylesheet('/* lefil-system-style */* {foo: 1} abc {123: true}')).to.deep.equal([])            
-        })
         it ('should ignore single line comments', () => {
             expect(parseStylesheet(`
                 * {foo: 1} // bla

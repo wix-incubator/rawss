@@ -1,4 +1,4 @@
-import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle } from './domUtils';
+import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches } from './domUtils';
 import { StyleRule } from './cssUtils'
 import * as shortid from 'shortid'
 
@@ -10,7 +10,7 @@ export interface StyleProcessor {
 
 export {getAllRulesInDocument, getRawComputedStyle} from './domUtils'
 export function run(document: HTMLDocument, processors: StyleProcessor[]) {
-    const allRules = getAllRulesInDocument(document)
+    const allRules = getAllRulesInDocument(document, element => !matches(element, '#lefil-style-manager'))
     const cache = new WeakMap()
     function issueRawStyle(element: HTMLElement) {
         if (cache.has(element)) {
@@ -55,7 +55,6 @@ export function run(document: HTMLDocument, processors: StyleProcessor[]) {
 
     const kebabCase = string => string.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()
     let cssText = `
-    /* lefil-system-style */
     ${results.map(({style, element}) => `[data-lefil-id='${issueID(element)}'] {
         ${[].map.call(style, (value, name) => `
             ${kebabCase(name)}: ${value} !important;
