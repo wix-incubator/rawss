@@ -6,6 +6,7 @@ import { StyleRule } from 'src/cssUtils';
 
 const doesRuleApply = domUtils.doesRuleApply
 const parseInlineStyle = domUtils.parseInlineStyle
+const getAllRulesInDocument = domUtils.getAllRulesInDocument
 describe('domUtils', () => {
     let browser = null;
     let page : Page = null;
@@ -83,6 +84,41 @@ describe('domUtils', () => {
                 return rules.map(r => [(<HTMLElement>r.selector).id, r.name, r.value])
             })
             expect(inlineStyle).to.deep.equal([['test', 'height', 'three-pixels']])        
+        })
+    })
+
+    describe('get all rules', () => {
+        it('should get rules from inline styles', async() => {
+            await page.setContent(`
+            <body>
+                <div id="test" class="bla" style="height: three-pixels"></div>
+            </body>
+            `)
+            const rules = await page.evaluate(() => getAllRulesInDocument(document).map(r => [(<HTMLElement>r.selector).id, r.name, r.value]))
+            expect(rules).to.deep.equal([['test', 'height', 'three-pixels']])                    
+        })
+        it('should get rules from style tags', async() => {
+            await page.setContent(`
+            <head>
+                <style>* {bla: --123}</style>
+            </head>
+            `)
+            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
+        })
+        it('should get rules from different origins in the correct order', async() => {
+            await page.setContent(`
+            <head>
+                <style>* {bla: --123}</style>
+                <style>#id {foo:bar /*ok: not*/}</style>
+            </head>
+            <body>
+                <div id="test" class="bla" style="height: sheker"></div>
+                <style>* {bla: abc}</style>
+            </body>
+            `)
+            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            expect(rules.map(r => r.value)).to.deep.equal(['sheker', 'bar', 'abc', '--123'])
         })
     })
 })
