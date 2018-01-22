@@ -6,7 +6,7 @@ import {RawStyleRule, RawStyle} from 'src/cssUtils'
 
 const Rawss = rawss.Rawss
 const createStyleProcessor = engine.createStyleProcessor
-describe('Engine', () => {
+describe('Rawcss', () => {
     let browser = null;
     let page : Page = null;
     before(async() => browser = await launch())

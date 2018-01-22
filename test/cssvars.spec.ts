@@ -18,7 +18,7 @@ describe('CSS Variables', () => {
     afterEach(() => page.close())
     after(() => browser.close())
 
-    it.only('should support simple CSS variables with $$ syntax', async() => {
+    it('should support simple CSS variables with $$ syntax', async() => {
         await page.setContent(`
             <head>
                 <style>
@@ -41,6 +41,56 @@ describe('CSS Variables', () => {
         });
 
         expect(height).to.equal(7)
+    })
+
+    it('should support several CSS variables with $$ syntax', async() => {
+        await page.setContent(`
+            <head>
+                <style>
+                    body { $$var1: 1px; $$var2: 3px }
+                    #container {
+                        $$var1: 2px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div id="container">
+                    <div id="test" style="height: calc(var($$var1) + 5px + var($$var2))"></div>
+                </div>
+            </body>
+        `)
+        const height = await page.evaluate(() => {
+            const cssVars = cssVariables({prefix: '$$', document})
+            cssVars.once()
+            return (<HTMLElement>document.querySelector('#test')).offsetHeight
+        });
+
+        expect(height).to.equal(10)
+    })
+
+    it('should support whitespace inside variable usage', async() => {
+        await page.setContent(`
+            <head>
+                <style>
+                    body { $$var1: 1px; $$var2: 3px }
+                    #container {
+                        $$var1: 2px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div id="container">
+                    <div id="test" style="height: calc(var( $$var1) + 5px + var($$var2    ))"></div>
+                </div>
+            </body>
+        `)
+        const height = await page.evaluate(() => {
+            const cssVars = cssVariables({prefix: '$$', document})
+            cssVars.once()
+            return (<HTMLElement>document.querySelector('#test')).offsetHeight
+        });
+
+        expect(height).to.equal(10)
     })
 
 })
