@@ -3,8 +3,15 @@ import { RawStyleRule, RawStyleDeclaration, RawStyle } from './cssUtils'
 import * as shortid from 'shortid'
 
 export interface StyleProcessor {
-    process: (style: RawStyle, element: HTMLElement) => Partial<CSSStyleDeclaration>
+    process: (element: HTMLElement, getRawStyle: (HTMLElement) => RawStyle) => Partial<CSSStyleDeclaration>
     match: (rule: RawStyleRule) => boolean
+}
+
+export function createStyleProcessor({process, match}) : StyleProcessor {
+    return {
+        process: (element, getRawStyle) => process(getRawStyle(element), element),
+        match
+    }
 }
 
 export {getAllRulesInDocument, getRawComputedStyle} from './domUtils'
@@ -20,6 +27,12 @@ function issueID(element: HTMLElement, prefix = '') {
     return id
 }
 
+export type Engine = {
+    run(processor: StyleProcessor[])
+    isManaging(e: Node)
+    destroy()
+}
+
 export function create(document: HTMLDocument) {
     const styleTag = document.createElement('style')
     const managerID = issueID(styleTag)
@@ -27,6 +40,10 @@ export function create(document: HTMLDocument) {
     return {
         destroy: () => {
             document.head.removeChild(styleTag)
+        },
+
+        isManaging(e: Node) {
+            return e === styleTag
         },
 
         run: (processors: StyleProcessor[]) => {
@@ -50,8 +67,7 @@ export function create(document: HTMLDocument) {
                         .reduce((els, rule) => [...els, ...getMatchingElements(document, rule)], []))
         
                     .forEach(element => {
-                        const rawStyle = issueRawStyle(element)
-                        const newStyle = processor.process(rawStyle, element);
+                        const newStyle = processor.process(element, issueRawStyle);
                         styleChanges.set(element, Object.assign({}, styleChanges.get(element), newStyle))
                     })
             })

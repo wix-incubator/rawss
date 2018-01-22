@@ -1,10 +1,11 @@
 import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import * as rawss from '../src/rawss';
+import * as engine from '../src/engine';
 import {RawStyleRule, RawStyle} from 'src/cssUtils'
 
 const Rawss = rawss.Rawss
-
+const createStyleProcessor = engine.createStyleProcessor
 describe('Engine', () => {
     let browser = null;
     let page : Page = null;
@@ -13,6 +14,7 @@ describe('Engine', () => {
         page = await browser.newPage();
         page.on('console', (e, args) => console[e['_type']](e['_text']))
         await page.addScriptTag({path: 'dist/rawss.js'})
+        await page.addScriptTag({path: 'dist/engine.js'})
     });
 
     afterEach(() => page.close())
@@ -25,7 +27,7 @@ describe('Engine', () => {
             </body>
         `)
         const height = await page.evaluate(() => {
-            const proc =({
+            const proc = createStyleProcessor({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
                 process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
             })
@@ -41,7 +43,7 @@ describe('Engine', () => {
 
     it('should register and process a rule using start()', async() => {
         const height = await page.evaluate(() => {
-            const proc =({
+            const proc = createStyleProcessor({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
                 process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })
@@ -62,7 +64,7 @@ describe('Engine', () => {
 
     it('should process several changes in a row', async() => {
         const height = await page.evaluate(() => {
-            const proc =({
+            const proc = createStyleProcessor({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
                 process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })
@@ -85,9 +87,9 @@ describe('Engine', () => {
         expect(height).to.equal(4)
     })
 
-    it('should not process changes when stop is called', async() => {
+    it('should not process changes once stop is called', async() => {
         const height = await page.evaluate(() => {
-            const proc =({
+            const proc = createStyleProcessor({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
                 process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })

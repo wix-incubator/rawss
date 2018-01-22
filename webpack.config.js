@@ -5,6 +5,8 @@ const path = require('path');
 module.exports = {
     entry: {
         engine: path.resolve('src/engine.ts'),
+        rawss: path.resolve('src/rawss.ts'),
+        cssvar: path.resolve('src/cssvar.ts'),
         domUtils: path.resolve('src/domUtils.ts')
     },
     output: {

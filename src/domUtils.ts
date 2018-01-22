@@ -18,7 +18,7 @@ export function parseInlineStyle(element: HTMLElement) : RawStyleRule[] {
 // TODO: link rels
 export function getAllRulesInDocument(document: HTMLDocument, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
     const elementsWithStyleAttributes = document.querySelectorAll('[style]')
-    const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], [])
+    const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], []).reverse()
     const styleTags = [].slice.call(document.querySelectorAll('style')).filter(filter).reverse().reduce((agg, e) => [...agg, ...parseStylesheet(e.innerHTML)], [])
     return [...inlineStyleRules, ...sortRulesBySpecificFirst(styleTags)]
 }

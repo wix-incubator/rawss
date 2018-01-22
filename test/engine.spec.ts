@@ -5,6 +5,7 @@ import {readFileSync} from 'fs'
 import {RawStyleRule, RawStyle} from 'src/cssUtils'
 
 const create = engine.create
+const createStyleProcessor = engine.createStyleProcessor
 
 describe('Engine', () => {
     let browser = null;
@@ -19,7 +20,6 @@ describe('Engine', () => {
     afterEach(() => page.close())
     after(() => browser.close())
 
-
     it('should register and process a simple rule', async() => {
         await page.setContent(`
             <body>
@@ -27,7 +27,7 @@ describe('Engine', () => {
             </body>
         `)
         const height = await page.evaluate(() => {
-            const proc =({
+            const proc = createStyleProcessor({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
                 process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
             })
@@ -37,6 +37,5 @@ describe('Engine', () => {
         });
 
         expect(height).to.equal(3)
-
     })
 })
