@@ -1,15 +1,17 @@
 import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches } from './domUtils';
-import { StyleRule } from './cssUtils'
+import { StyleRule, StyleDeclaration } from './cssUtils'
 import * as shortid from 'shortid'
 
 export type RawStyle = {[name: string]: string}
 export interface StyleProcessor {
-    process: (style: RawStyle) => CSSStyleDeclaration
+    process: (style: RawStyle, element: HTMLElement) => Partial<CSSStyleDeclaration>
     match: (rule: StyleRule) => boolean
 }
 
 export {getAllRulesInDocument, getRawComputedStyle} from './domUtils'
 export function run(document: HTMLDocument, processors: StyleProcessor[]) {
+    const MANAGER_ID = 'lefil-style-manager'
+    const ITEM_ID_ATTR_NAME = 'data-lefil-id'
     const allRules = getAllRulesInDocument(document, element => !matches(element, '#lefil-style-manager'))
     const cache = new WeakMap()
     function issueRawStyle(element: HTMLElement) {
@@ -23,44 +25,52 @@ export function run(document: HTMLDocument, processors: StyleProcessor[]) {
     }
 
     function issueID(element: HTMLElement) {
-        if (element.hasAttribute('data-lefil-id')) {
-            return element.getAttribute('data-lefil-id')
+        if (element.hasAttribute(ITEM_ID_ATTR_NAME)) {
+            return element.getAttribute(ITEM_ID_ATTR_NAME)
         }
 
         const id = shortid.generate()
-        element.setAttribute('data-lefil-id', id)
+        element.setAttribute(ITEM_ID_ATTR_NAME, id)
         return id
     }
 
     function issueStyleManager() : HTMLStyleElement {
-        const existing = <HTMLStyleElement>document.querySelector('#lefil-style-manager');
+        const existing = <HTMLStyleElement>document.getElementById(MANAGER_ID);
         if (existing) {
             return existing;
         }
 
         const manager = document.createElement('style')
         document.head.appendChild(manager)
-        manager.setAttribute('id', 'lefil-style-manager')
+        manager.setAttribute('id', MANAGER_ID)
         return manager
     }
 
-    const results : {style: CSSStyleDeclaration, element: HTMLElement}[] = processors.map((processor) => 
-        [].map.call(
-            allRules
-                .filter(processor.match)
-                .map(getMatchingElements.bind(null, document))
-                .reduce(Set.prototype.add.call, new Set<HTMLElement>()),
-                ((element: HTMLElement) => ({element, style: processor.process(issueRawStyle(element))}))))
-                .reduce((agg, e) => [...agg, e], [])
+    const styleChanges = new Map<HTMLElement, Partial<CSSStyleDeclaration>>()
+
+    processors.forEach(processor => {
+        new Set(
+            allRules.filter(processor.match)
+                .reduce((els, rule) => [...els, ...getMatchingElements(document, rule)], []))
+
+            .forEach(element => {
+                const rawStyle = issueRawStyle(element)
+                const newStyle = processor.process(rawStyle, element);
+                styleChanges.set(element, Object.assign({}, styleChanges.get(element), newStyle))
+            })
+    })
+
+    const styleEntries = []
+    styleChanges.forEach((value, key) => styleEntries.push([key, value]))
 
     const kebabCase = string => string.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()
     let cssText = `
-    ${results.map(({style, element}) => `[data-lefil-id='${issueID(element)}'] {
-        ${[].map.call(style, (value, name) => `
-            ${kebabCase(name)}: ${value} !important;
-        `)}
-    }`)}
+    ${styleEntries.map(([element, style]) => `[${ITEM_ID_ATTR_NAME}='${issueID(element)}'] {${Object.keys(style).map(name => `
+        ${kebabCase(name)}: ${style[name]} !important;
+    `)}}`)}
     `
+
+    console.log(cssText)
 
     const manager = issueStyleManager()
     manager.innerHTML = cssText

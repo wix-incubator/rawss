@@ -1,40 +1,43 @@
-// import {expect} from 'chai'
-// import {launch, Page} from 'puppeteer'
-// import * as lefil from '../src/lefil';
-// import {readFileSync} from 'fs'
+import {expect} from 'chai'
+import {launch, Page} from 'puppeteer'
+import * as lefil from '../src/lefil';
+import {readFileSync} from 'fs'
+import {StyleRule} from 'src/cssUtils'
+import { RawStyle } from '../src/lefil';
 
-// describe('Lefil API', () => {
-//     let browser = null;
-//     let page : Page = null;
-//     before(async() => browser = await launch())
-//     beforeEach(async () => {
-//         page = await browser.newPage();
-//         await page.addScriptTag({path: 'src/cssparser.js'})
-//         await page.addScriptTag({path: 'dist/main.js'})
-//     });
+const run = lefil.run
 
-//     afterEach(() => page.close())
-//     after(() => browser.close())
+describe('Lefil API', () => {
+    let browser = null;
+    let page : Page = null;
+    before(async() => browser = await launch())
+    beforeEach(async () => {
+        page = await browser.newPage();
+        page.on('console', (e, args) => console[e['_type']](e['_text']))
+        await page.addScriptTag({path: 'dist/lefil.js'})
+    });
+
+    afterEach(() => page.close())
+    after(() => browser.close())
 
 
-//     it('should register and process a simple rule', async() => {
-//         await page.setContent(`
-//             <body>
-//                 <div id="test" style="height: three-pixels"></div>
-//             </body>
-//         `)
-//         // const height = await page.evaluate(() => {
-//         //     const context = new Context()
-//         //     context.addRule({
-//         //         match: (value: string, key: string, selector: string) =>  value === 'three-pixels',
-//         //         process: (value: string, key: string, element: HTMLElement) => '3px'
-//         //     })
+    it.only('should register and process a simple rule', async() => {
+        await page.setContent(`
+            <body>
+                <div id="test" style="height: three-pixels"></div>
+            </body>
+        `)
+        const height = await page.evaluate(() => {
+            const proc =({
+                match: (styleRule : StyleRule) =>  styleRule.value === 'three-pixels',
+                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
+            })
             
-//         //     context.sync()
-//         //     return (<HTMLElement>document.querySelector('#test')).offsetHeight
-//         // });
+            run(document, [proc])
+            return (<HTMLElement>document.querySelector('#test')).offsetHeight
+        });
 
-//         // expect(height).to.equal(3)
+        expect(height).to.equal(3)
 
-//     })
-// })
+    })
+})
