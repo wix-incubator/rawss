@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/wix/lefil.git"
+    "url": "git+ssh://git@github.com/wix/rawss.git"
   },
   "keywords": [
     "polyfill",
@@ -18,9 +18,9 @@
   "author": "noamr@wix.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/wix/lefil/issues"
+    "url": "https://github.com/wix/rawss/issues"
   },
-  "homepage": "https://github.com/wix/lefill#readme",
+  "homepage": "https://github.com/wix/rawss#readme",
   "devDependencies": {
     "@types/mocha": "^2.2.46",
     "@types/node": "^9.3.0",

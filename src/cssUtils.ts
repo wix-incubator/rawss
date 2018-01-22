@@ -1,6 +1,6 @@
 import * as specificity from 'css-specificity'
 
-export interface StyleEntry {
+export interface RawStyleEntry {
     name: string;
     value: string;
 }
@@ -25,9 +25,9 @@ const specificityComparator = (selector1: string | HTMLElement, selector2: strin
     return -1
 }
 
-export type StyleDeclaration = StyleEntry[]
+export type RawStyleDeclaration = RawStyleEntry[]
 
-export interface StyleRule extends StyleEntry {
+export interface RawStyleRule extends RawStyleEntry {
     selector: string | HTMLElement;
 }
 
@@ -36,12 +36,12 @@ function clearComments(css) {
     return css.replace(/\/(\*(.|[\r\n])*?\*\/)|(\/[^\n]*)/ig, '')
 }
 
-export function parseDeclaration(rawCss: string) : StyleDeclaration {
+export function parseDeclaration(rawCss: string) : RawStyleDeclaration {
     const css = clearComments(rawCss)
     const declarationRegex = /\s*([^;:\s]+)\s*:\s*([^;:]+)\s*;?\s*/
     let index = 0
     let parsed = null
-    const declaration : StyleDeclaration = []
+    const declaration : RawStyleDeclaration = []
     while (parsed = css && declarationRegex.exec(css.substr(index))) {
         declaration.push({name: parsed[1].trim(), value: parsed[2].trim()})
         index += parsed.index + parsed[0].length
@@ -50,12 +50,12 @@ export function parseDeclaration(rawCss: string) : StyleDeclaration {
     return declaration
 }
 
-export function parseStylesheet(rawCss: string) : StyleRule[] {
+export function parseStylesheet(rawCss: string) : RawStyleRule[] {
     const css = clearComments(rawCss)
     const ruleRegex = /([^{}]+){([^{}]+)}/
     let index = 0
     let parsed = null
-    let rules : StyleRule[] = []
+    let rules : RawStyleRule[] = []
     while (parsed = css && ruleRegex.exec(css.substr(index))) {
         const selector = parsed[1].trim()
         const style = parseDeclaration(parsed[2])
@@ -66,7 +66,7 @@ export function parseStylesheet(rawCss: string) : StyleRule[] {
     return rules
 }
 
-export function sortRulesBySpecificFirst(rules: StyleRule[]) : StyleRule[] {
+export function sortRulesBySpecificFirst(rules: RawStyleRule[]) : RawStyleRule[] {
     return rules.sort((a, b) => specificityComparator(a.selector, b.selector))
 }   
 

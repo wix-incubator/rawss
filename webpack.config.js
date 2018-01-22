@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        lefil: path.resolve('src/lefil.ts'),
+        engine: path.resolve('src/engine.ts'),
         domUtils: path.resolve('src/domUtils.ts')
     },
     output: {
