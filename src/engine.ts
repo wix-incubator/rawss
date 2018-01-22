@@ -9,31 +9,17 @@ export interface StyleProcessor {
 }
 
 export {getAllRulesInDocument, getRawComputedStyle} from './domUtils'
-const elementPrivateData = new WeakMap<HTMLElement, ElementPrivateData>()
-
-class ElementPrivateData {
-    id: string
-}
-
-function dataFor(e: HTMLElement) {
-    if (elementPrivateData.has(e)) {
-        return elementPrivateData.get(e)
-    }
-
-    const pd = new ElementPrivateData
-    elementPrivateData.set(e, pd)
-    return pd
-}
-
 
 function issueID(element: HTMLElement, prefix = '') {
-    const data = dataFor(element)
-    if (!data.id) {
-        data.id = shortid.generate().toLowerCase()
-        element.setAttribute(`data-rawss-${prefix}id`, data.id)
+    const attrName = `data-rawss-${prefix}id`
+    if (element.hasAttribute(attrName)) {
+        return element.getAttribute(attrName)
+
     }
 
-    return data.id
+    const id = shortid.generate().toLowerCase()
+    element.setAttribute(attrName, id)
+    return id
 }
 
 export function create(document: HTMLDocument) {
@@ -83,8 +69,6 @@ export function create(document: HTMLDocument) {
 `
         
             styleTag.innerHTML = cssText
-            console.log(document.head.innerHTML)
-            console.log(document.body.innerHTML)
         }
     }
 }
