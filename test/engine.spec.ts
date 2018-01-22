@@ -2,8 +2,7 @@ import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import * as engine from '../src/engine';
 import {readFileSync} from 'fs'
-import {RawStyleRule} from 'src/cssUtils'
-import { RawStyle } from '../src/engine';
+import {RawStyleRule, RawStyle} from 'src/cssUtils'
 
 const create = engine.create
 

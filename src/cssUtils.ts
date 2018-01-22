@@ -4,6 +4,7 @@ export interface RawStyleEntry {
     name: string;
     value: string;
 }
+export type RawStyle = { [prop: string]: string }
 
 const specificityComparator = (selector1: string | HTMLElement, selector2: string | HTMLElement) => {
     const selectors = [selector1, selector2]

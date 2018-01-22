@@ -1,8 +1,7 @@
 import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches } from './domUtils';
-import { RawStyleRule, RawStyleDeclaration } from './cssUtils'
+import { RawStyleRule, RawStyleDeclaration, RawStyle } from './cssUtils'
 import * as shortid from 'shortid'
 
-export type RawStyle = {[name: string]: string}
 export interface StyleProcessor {
     process: (style: RawStyle, element: HTMLElement) => Partial<CSSStyleDeclaration>
     match: (rule: RawStyleRule) => boolean
@@ -14,7 +13,6 @@ function issueID(element: HTMLElement, prefix = '') {
     const attrName = `data-rawss-${prefix}id`
     if (element.hasAttribute(attrName)) {
         return element.getAttribute(attrName)
-
     }
 
     const id = shortid.generate().toLowerCase()
