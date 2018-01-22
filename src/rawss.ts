@@ -72,11 +72,6 @@ export class Rawss {
     stop() {
         stop(d(this))
     }
-
-
-    get _debug() {
-        return d(this)
-    }
 }
 
 export type StyleProcessor = StyleProcessor
