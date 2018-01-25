@@ -9,7 +9,7 @@ Aiming for a fully functional polyfill for CSS variable
 ## API
 const {Rawss, StyleProcessor, cssVariables} = require('rawss')
 
-### StyleProcessor: A generic processor interfa eto handle a raw CSS rule
+### StyleProcessor: A generic processor interface to handle a raw CSS rule
 * match({name, value, selector}): boolean
 Implement to specify which style declarations apply to your processor
 
