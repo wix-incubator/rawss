@@ -3,22 +3,36 @@ import {launch, Page} from 'puppeteer'
 import * as rawss from '../src/rawss';
 import * as engine from '../src/engine';
 import {RawStyleRule, RawStyle} from 'src/cssUtils'
-
+import * as express from 'express'
 const Rawss = rawss.Rawss
 const createStyleProcessor = engine.createStyleProcessor
 describe('Rawcss', () => {
     let browser = null;
     let page : Page = null;
-    before(async() => browser = await launch())
-    beforeEach(async () => {
+    let app = null
+    let server = null
+    const port = 9987
+    before(async() => {
+        browser = await launch()
+        app = express()
+        app.use(express.static('test/public'))
+        server = app.listen(port)
         page = await browser.newPage();
+        await page.goto(`http://localhost:${port}/index.html`)
         page.on('console', (e, args) => console[e['_type']](e['_text']))
+    })
+
+    beforeEach(async () => {
         await page.addScriptTag({path: 'dist/rawss.js'})
         await page.addScriptTag({path: 'dist/engine.js'})
     });
 
     afterEach(() => page.close())
-    after(() => browser.close())
+    after(async () => {
+        await browser.close();
+        await new Promise(r => server.close(r))
+    })
+
 
     it('should register and process a rule using once()', async() => {
         await page.setContent(`
@@ -82,6 +96,30 @@ describe('Rawcss', () => {
                     })
                 })
             })
+        });
+
+        expect(height).to.equal(4)
+    })
+
+    it('should process styles from external stylesheets', async() => {
+        await page.setContent('<head><style>#test { height: 30px; }</style><link rel="stylesheet" href="/test2.css" /></head><body />')
+        const height = await page.evaluate(() => {
+            const proc = createStyleProcessor({
+                match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
+                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+            })
+            
+            
+            const rawss = new Rawss(document)
+            rawss.add(proc)
+            rawss.start()
+            document.body.innerHTML = '<div id="test"></div>'
+
+            return rawss.settle().then(() => new Promise(r => {
+                requestAnimationFrame(() => {
+                    r((<HTMLElement>document.querySelector('#test')).offsetHeight)
+                })
+            }))
         });
 
         expect(height).to.equal(4)

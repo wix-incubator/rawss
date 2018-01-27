@@ -52,6 +52,9 @@ export function parseDeclaration(rawCss: string) : RawStyleDeclaration {
 }
 
 export function parseStylesheet(rawCss: string) : RawStyleRule[] {
+    if (!rawCss) {
+        return []
+    }
     const css = clearComments(rawCss)
     const ruleRegex = /([^{}]+){([^{}]+)}/
     let index = 0

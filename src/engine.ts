@@ -1,4 +1,4 @@
-import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches } from './domUtils';
+import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches, waitForStylesToBeLoaded } from './domUtils';
 import { RawStyleRule, RawStyleDeclaration, RawStyle } from './cssUtils'
 import * as shortid from 'shortid'
 
@@ -30,6 +30,7 @@ function issueID(element: HTMLElement, prefix = '') {
 export type Engine = {
     run(processor: StyleProcessor[])
     isManaging(e: Node)
+    waitForStylesToBeLoaded() : Promise<{}>
     destroy()
 }
 
@@ -44,6 +45,10 @@ export function create(document: HTMLDocument) {
 
         isManaging(e: Node) {
             return e === styleTag
+        },
+
+        waitForStylesToBeLoaded() {
+            return new Promise(r => waitForStylesToBeLoaded(document).then(() => r()))
         },
 
         run: (processors: StyleProcessor[]) => {
@@ -80,8 +85,7 @@ export function create(document: HTMLDocument) {
     ${styleEntries.map(([element, style]) => `[data-rawss-${managerID}-id='${issueID(element, `${managerID}-`)}'] {${Object.keys(style).map(name => `
         ${kebabCase(name)}: ${style[name]} !important;
     `)}}`)}
-`
-        
+`        
             styleTag.innerHTML = cssText
         }
     }

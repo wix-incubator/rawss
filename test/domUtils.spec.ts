@@ -3,25 +3,39 @@ import {launch, Page} from 'puppeteer'
 import {readFileSync} from 'fs'
 import * as domUtils from '../src/domUtils';
 import { RawStyleRule } from 'src/cssUtils';
+import * as express from 'express'
 
 const doesRuleApply = domUtils.doesRuleApply
 const parseInlineStyle = domUtils.parseInlineStyle
 const getAllRulesInDocument = domUtils.getAllRulesInDocument
 const getRawComputedStyle = domUtils.getRawComputedStyle
-const waitForStylesLoaded = domUtils.waitForStylesLoaded
+const waitForStylesToBeLoaded = domUtils.waitForStylesToBeLoaded
 
 describe('domUtils', () => {
     let browser = null;
     let page : Page = null;
-    before(async() => browser = await launch())
+    let app = null
+    let server = null
+    const port = 9987
+
+    before(async() => {
+        browser = await launch({devtools: true})
+        app = express()
+        app.use(express.static('test/public'))
+        server = app.listen(port)
+    })
     beforeEach(async () => {
         page = await browser.newPage();
+        await page.goto(`http://localhost:${port}/index.html`)
         page.on('console', (e, args) => console[e['_type']](e['_text']))
         await page.addScriptTag({path: 'dist/domUtils.js'})
     });
 
     afterEach(() => page.close())
-    after(() => browser.close())
+    after(async () => {
+        await browser.close();
+        await new Promise(r => server.close(r))
+    })
 
     describe('doesRuleApply', () => {
         it('should return true for a simple rule', async () => {
@@ -112,29 +126,15 @@ describe('domUtils', () => {
         })
         
         it('should get rules from external style tags', async() => {
-            page.setRequestInterception(true)
-            page.on('error', e => console.error(e.stack))
-            page.on('request', req => {
-                if (!req['_url'].match(/\.css/)) {
-                    req.continue()
-                    return
-                }
-                req.respond({
-                    status: 200,
-                    contentType: 'text/css',
-                    body: '* {bla: --676}'
-                })
-            })
-
             await page.setContent(`
             <head>
-                <link rel="stylesheet" type="text/css" href="http://localhost/sheker.css" />
+                <link rel="stylesheet" type="text/css" href="/test1.css" />
             </head>
             `)
-            await page.evaluate(() => waitForStylesLoaded(document))
+            await page.evaluate(() => waitForStylesToBeLoaded(document))
             const rules = await page.evaluate(() => getAllRulesInDocument(document))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--676'}])                    
-        })
+        }).timeout(1000000)
         
         it('should filter out rules from managed style tags', async() => {
             await page.setContent(`

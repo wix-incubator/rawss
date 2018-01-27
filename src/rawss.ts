@@ -15,6 +15,9 @@ function once(data: PrivateData) {
     data.engine.run(data.processors)
 }
 
+function reprocessOnStylesLoaded(data: PrivateData) {
+    data.engine.waitForStylesToBeLoaded().then(() => once(data));
+}
 function process(data: PrivateData, mutations: MutationRecord[]) {
     const relevantMutations = mutations.filter(m => !data.engine.isManaging(m.target))
     if (!relevantMutations.length) {
@@ -22,6 +25,7 @@ function process(data: PrivateData, mutations: MutationRecord[]) {
     }
     
     once(data)
+    reprocessOnStylesLoaded(data)
 }
 
 function init(r: Rawss, document: HTMLDocument) {
@@ -33,6 +37,7 @@ function init(r: Rawss, document: HTMLDocument) {
     p.observer = new MutationObserver((mutations: MutationRecord[]) => {
         process(p, mutations)
     })
+    reprocessOnStylesLoaded(p)
 }
 
 function start(data: PrivateData) {
@@ -67,6 +72,10 @@ export class Rawss {
 
     start() {
         start(d(this))
+    }
+
+    settle() {
+        return d(this).engine.waitForStylesToBeLoaded()
     }
 
     stop() {
