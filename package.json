@@ -2,7 +2,7 @@
   "name": "rawss",
   "version": "1.0.0",
   "description": "Framework for CSS polyfills",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "mocha",
     "dev": "webpack-dev-server"
@@ -32,12 +32,15 @@
     "ts-loader": "^3.2.0",
     "ts-node": "^4.1.0",
     "tsconfig-paths": "^3.1.1",
+    "typedoc": "^0.9.0",
+    "typedoc-webpack-plugin": "^1.1.4",
     "typescript": "^2.6.2",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.0",
     "webpack-watch-server": "^1.2.1"
   },
   "dependencies": {
+    "@types/es6-shim": "^0.31.35",
     "css-specificity": "^0.1.0",
     "express": "^4.16.2",
     "shortid": "^2.2.8"

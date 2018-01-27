@@ -18,31 +18,8 @@ Implement to apply raw style to real, valid style
 getRawStyle can return the raw, unfiltered style of any element
 
 ### Rawss: generic API for responding to any style change
-* constructor(document)
-Create a Rawss engine that tracks changes in the document
-
-* add(processor : StyleProcessor)
-Add a processor that can handle styles
-A style processor should match certain CSS rules, and resolve their raw styles to valid CSS style.
-
-
-* start()
-Observe the document and automatically process with all added processors
-
-* stop()
-Stop observing
-
-* once()
-Sync the document once with all added processors
-
+[API](./docs/modules/_rawss_.html)
 
 ### cssVariables: specific implementation for CSS variables polyfill
-* start()
-Start an observer on the document that would make css variables work
-
-* stop()
-Stop the observer
-
-* once()
-Run the CSS variable sync once
+[API](./docs/modules/_cssvar_.html)
 

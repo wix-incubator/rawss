@@ -1,21 +1,38 @@
-import { getAllRulesInDocument, getMatchingElements, getRawComputedStyle, matches, waitForStylesToBeLoaded } from './domUtils';
+import { getAllRules, getMatchingElements, getRawComputedStyle, matches, waitForStylesToBeLoaded } from './domUtils';
 import { RawStyleRule, RawStyleDeclaration, RawStyle } from './cssUtils'
 import * as shortid from 'shortid'
 
-export interface StyleProcessor {
-    process: (element: HTMLElement, getRawStyle: (HTMLElement) => RawStyle) => Partial<CSSStyleDeclaration>
+/**
+ * @
+ */
+export interface StyleResolver {
+    /**
+     * @param element: Element to resolve style for
+     * @param getRawStyle: receive any raw style for an element
+     */
+    resolve: (element: HTMLElement, getRawStyle: (HTMLElement) => RawStyle) => Partial<CSSStyleDeclaration>
     match: (rule: RawStyleRule) => boolean
 }
 
-export function createStyleProcessor({process, match}) : StyleProcessor {
+/**
+ * @hidden
+ * @param resolver
+ */
+export function createStyleResolver({resolve, match}) : StyleResolver {
     return {
-        process: (element, getRawStyle) => process(getRawStyle(element), element),
+        resolve: (element, getRawStyle) => resolve(getRawStyle(element), element),
         match
     }
 }
 
-export {getAllRulesInDocument, getRawComputedStyle} from './domUtils'
+/**
+ * @hidden
+ */
+export {getAllRules, getRawComputedStyle} from './domUtils'
 
+/**
+ * @hidden
+ */
 function issueID(element: HTMLElement, prefix = '') {
     const attrName = `data-rawss-${prefix}id`
     if (element.hasAttribute(attrName)) {
@@ -27,20 +44,29 @@ function issueID(element: HTMLElement, prefix = '') {
     return id
 }
 
+/**
+ * @hidden
+ */
 export type Engine = {
-    run(processor: StyleProcessor[])
+    run(resolver: StyleResolver[])
     isManaging(e: Node)
     waitForStylesToBeLoaded() : Promise<{}>
-    destroy()
+    cleanup()
 }
 
-export function create(document: HTMLDocument) {
+/**
+ * 
+ * @hidden
+ */
+export function create(rootElement: HTMLElement) {
+    const document = rootElement.ownerDocument
+    const headElement = rootElement === document.documentElement ? document.head : rootElement;
     const styleTag = document.createElement('style')
     const managerID = issueID(styleTag)
-    document.head.appendChild(styleTag)
+    headElement.appendChild(styleTag)
     return {
-        destroy: () => {
-            document.head.removeChild(styleTag)
+        cleanup: () => {
+            headElement.removeChild(styleTag)
         },
 
         isManaging(e: Node) {
@@ -48,12 +74,12 @@ export function create(document: HTMLDocument) {
         },
 
         waitForStylesToBeLoaded() {
-            return new Promise(r => waitForStylesToBeLoaded(document).then(() => r()))
+            return new Promise(r => waitForStylesToBeLoaded(rootElement).then(() => r()))
         },
 
-        run: (processors: StyleProcessor[]) => {
-            const allRules = getAllRulesInDocument(document, element => element !== styleTag)
-            const cache = new WeakMap()
+        run: (resolvers: StyleResolver[]) => {
+            const allRules = getAllRules(rootElement, element => element !== styleTag)
+            const cache = new WeakMap<HTMLElement, RawStyle>()
             function issueRawStyle(element: HTMLElement) {
                 if (cache.has(element)) {
                     return cache.get(element);
@@ -66,13 +92,13 @@ export function create(document: HTMLDocument) {
         
             const styleChanges = new Map<HTMLElement, Partial<CSSStyleDeclaration>>()
         
-            processors.forEach(processor => {
+            resolvers.forEach(resolver => {
                 new Set(
-                    allRules.filter(processor.match)
-                        .reduce((els, rule) => [...els, ...getMatchingElements(document, rule)], []))
+                    allRules.filter(resolver.match)
+                        .reduce((els, rule) => [...els, ...getMatchingElements(rootElement, rule)], []))
         
                     .forEach(element => {
-                        const newStyle = processor.process(element, issueRawStyle);
+                        const newStyle = resolver.resolve(element, issueRawStyle);
                         styleChanges.set(element, Object.assign({}, styleChanges.get(element), newStyle))
                     })
             })

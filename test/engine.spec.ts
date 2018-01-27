@@ -5,7 +5,7 @@ import {readFileSync} from 'fs'
 import {RawStyleRule, RawStyle} from 'src/cssUtils'
 
 const create = engine.create
-const createStyleProcessor = engine.createStyleProcessor
+const createStyleResolver = engine.createStyleResolver
 
 describe('Engine', () => {
     let browser = null;
@@ -20,19 +20,19 @@ describe('Engine', () => {
     afterEach(() => page.close())
     after(() => browser.close())
 
-    it('should register and process a simple rule', async() => {
+    it('should register and resolve a simple rule', async() => {
         await page.setContent(`
             <body>
                 <div id="test" style="height: three-pixels"></div>
             </body>
         `)
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
             })
             
-            create(document).run([proc])
+            create(document.documentElement).run([proc])
             return (<HTMLElement>document.querySelector('#test')).offsetHeight
         });
 

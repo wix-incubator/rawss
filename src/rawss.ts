@@ -1,86 +1,96 @@
-import {create, Engine, StyleProcessor} from './engine'
+import {create, Engine, StyleResolver} from './engine'
 
+/**
+ * Interface for managing CSS resolve lifecycle 
+ */
+export interface Rawss {
+    /**
+     * Add a style resolver
+     * @param resolver
+     */
+    add(resolver: StyleResolver)
 
-class PrivateData {
-    document: HTMLDocument
-    engine: Engine
-    processors: StyleProcessor[] = []
-    observer: MutationObserver
+    /***
+     * Process all resolvers once
+     */
+    once()
+
+    /**
+     * Observe the document for changes, and resolve when needed
+     */
+    start()
+
+    /**
+     * Stop observing the docment for changes
+     */
+    pause()
+
+    /**
+     * Remove attributes/elements created by Rawss
+     */
+    cleanup()
+
+    /**
+     * Returns a promise that gets resolved when all styles are loaded
+     */
+    settle() : Promise<{}>
 }
 
-const dataMap = new WeakMap<Rawss, PrivateData>()
-const d = (r: Rawss) => dataMap.get(r)
+export function createRawss(rootElement: HTMLElement) : Rawss {
+    const resolvers : StyleResolver[] = []
+    const engine = create(rootElement)
+    function once() {
+        engine.run(resolvers)
+    }
 
-function once(data: PrivateData) {
-    data.engine.run(data.processors)
-}
-
-function reprocessOnStylesLoaded(data: PrivateData) {
-    data.engine.waitForStylesToBeLoaded().then(() => once(data));
-}
-function process(data: PrivateData, mutations: MutationRecord[]) {
-    const relevantMutations = mutations.filter(m => !data.engine.isManaging(m.target))
-    if (!relevantMutations.length) {
-        return
+    function resolve(mutations: MutationRecord[]) {
+        const relevantMutations = mutations.filter(m => !engine.isManaging(m.target))
+        if (!relevantMutations.length) {
+            return
+        }
+        
+        once()
+        reapplyOnStylesLoaded()
     }
     
-    once(data)
-    reprocessOnStylesLoaded(data)
-}
+    function pause() {
+        observer.disconnect()
+    }
 
-function init(r: Rawss, document: HTMLDocument) {
-    const p = new PrivateData()
-    dataMap.set(r, p)
-    p.document = document
-    p.engine = create(document)
-
-    p.observer = new MutationObserver((mutations: MutationRecord[]) => {
-        process(p, mutations)
+    function reapplyOnStylesLoaded() {
+        engine.waitForStylesToBeLoaded().then(once);
+    }    
+    
+    const observer = new MutationObserver((mutations: MutationRecord[]) => {
+        resolve(mutations)
     })
-    reprocessOnStylesLoaded(p)
-}
 
-function start(data: PrivateData) {
-    data.observer.observe(data.document.documentElement, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        characterData: true
-    })
-}
-
-function stop(data: PrivateData) {
-    data.observer.disconnect()
-}
-
-export class Rawss {
-    constructor(document: HTMLDocument) {
-        init(this, document)
+    function start() {
+        observer.observe(rootElement, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            characterData: true
+        })
     }
+    
+    reapplyOnStylesLoaded()
 
-    add(p: StyleProcessor) {
-        d(this).processors.push(p)
-    }
+    return {
+        add(resolver: StyleResolver) {
+            resolvers.push(resolver)
+        },
 
-    destroy() {
-        d(this).engine.destroy()
-    }
+        cleanup() {
+            engine.cleanup();
+        },
 
-    once() {
-        once(d(this))
-    }
+        once, start, pause,
 
-    start() {
-        start(d(this))
-    }
-
-    settle() {
-        return d(this).engine.waitForStylesToBeLoaded()
-    }
-
-    stop() {
-        stop(d(this))
+        settle() {
+            return engine.waitForStylesToBeLoaded()
+        }
     }
 }
 
-export type StyleProcessor = StyleProcessor
+export type StyleResolver = StyleResolver

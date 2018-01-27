@@ -1,31 +1,59 @@
-import {Rawss, StyleProcessor} from './rawss'
-import { RawStyle, RawStyleRule } from 'src/cssUtils';
+import {Rawss, StyleResolver, createRawss} from './rawss'
+import { RawStyle, RawStyleRule } from './cssUtils';
 import { escape } from 'querystring';
-import { getRawComputedStyle } from 'src/domUtils';
+import { getRawComputedStyle } from './domUtils';
 
-interface CssVariablesOptions {
+export interface CssVariablesOptions {
+    /**
+     * An existing Rawss observer. Better reuse if you have several on the page
+     */
     rawss?: Rawss
-    document?: HTMLDocument
+
+    /**
+     * Root element for scoping style resolving
+     */
+    rootElement?: HTMLElement
+
+    /**
+     * Prefix for variables. Default is (--), as per spec
+     */
     prefix: string
 }
 
-interface CssVariablesPolyfill {
-    start()
-    stop()
-    once()
-}
+export interface CssVariablesPolyfill {
+    /***
+     * Observe changes in the document, and apply CSS variable resolving as they happen
+     */
+    start() : void
 
+    /***
+     * Stop observing
+     */
+    stop() : void
+
+    /***
+     * Resolve based on currently loaded styles
+     */
+    once() : void
+}
+/**
+ * @hidden
+ */
 function escapeRegExp(str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
   }
 
-export function cssVariables(opt: CssVariablesOptions = {document: window.document, rawss: null, prefix: '--'}) : CssVariablesPolyfill {
-    let rawss = opt.rawss || new Rawss(opt.document)
-    const prefix = escapeRegExp(opt.prefix)
+  /**
+   * 
+   * @param options
+   */
+export function cssVariables(options: CssVariablesOptions = {rootElement: window.document.documentElement, rawss: null, prefix: '--'}) : CssVariablesPolyfill {
+    let rawss = options.rawss || createRawss(options.rootElement || window.document.documentElement)
+    const prefix = escapeRegExp(options.prefix)
     const DECLARE_REGEX = new RegExp(`${prefix}\\w+$`)
     const USE_REGEX = new RegExp(`var\\(\\s*${prefix}(\\w+)\\s*\\)`)
 
-    function process(element: HTMLElement, getRawStyle: (e: HTMLElement) => RawStyle) : Partial<CSSStyleDeclaration> {
+    function resolve(element: HTMLElement, getRawStyle: (e: HTMLElement) => RawStyle) : Partial<CSSStyleDeclaration> {
         const style = getRawStyle(element)
         return Object.keys(style).reduce((newStyle, key) => {
             let value = style[key]
@@ -34,7 +62,7 @@ export function cssVariables(opt: CssVariablesOptions = {document: window.docume
             let match = null
             while (match = USE_REGEX.exec(value.substr(index))) {
                 const varName = match[1]
-                const attrName = opt.prefix + varName
+                const attrName = options.prefix + varName
                 let resolvedValue : string = style[attrName]
                 if (!resolvedValue) {
                     for (let e = element.parentElement; e && !resolvedValue; e = e.parentElement) {
@@ -60,7 +88,7 @@ export function cssVariables(opt: CssVariablesOptions = {document: window.docume
     }
 
     rawss.add({
-        process, match
+        resolve, match
     })
 
     return {
@@ -69,7 +97,7 @@ export function cssVariables(opt: CssVariablesOptions = {document: window.docume
         },
 
         stop() {
-            rawss.stop()
+            rawss.pause()
         },
 
         once() {

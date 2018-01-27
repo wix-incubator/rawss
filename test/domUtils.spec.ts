@@ -7,7 +7,7 @@ import * as express from 'express'
 
 const doesRuleApply = domUtils.doesRuleApply
 const parseInlineStyle = domUtils.parseInlineStyle
-const getAllRulesInDocument = domUtils.getAllRulesInDocument
+const getAllRules = domUtils.getAllRules
 const getRawComputedStyle = domUtils.getRawComputedStyle
 const waitForStylesToBeLoaded = domUtils.waitForStylesToBeLoaded
 
@@ -112,7 +112,7 @@ describe('domUtils', () => {
                 <div id="test" class="bla" style="height: three-pixels"></div>
             </body>
             `)
-            const rules = await page.evaluate(() => getAllRulesInDocument(document).map(r => [(<HTMLElement>r.selector).id, r.name, r.value]))
+            const rules = await page.evaluate(() => getAllRules(document.documentElement).map(r => [(<HTMLElement>r.selector).id, r.name, r.value]))
             expect(rules).to.deep.equal([['test', 'height', 'three-pixels']])                    
         })
         it('should get rules from style tags', async() => {
@@ -121,7 +121,7 @@ describe('domUtils', () => {
                 <style>* {bla: --123}</style>
             </head>
             `)
-            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            const rules = await page.evaluate(() => getAllRules(document.documentElement))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
         })
         
@@ -131,8 +131,8 @@ describe('domUtils', () => {
                 <link rel="stylesheet" type="text/css" href="/test1.css" />
             </head>
             `)
-            await page.evaluate(() => waitForStylesToBeLoaded(document))
-            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            await page.evaluate(() => waitForStylesToBeLoaded(document.documentElement))
+            const rules = await page.evaluate(() => getAllRules(document.documentElement))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--676'}])                    
         }).timeout(1000000)
         
@@ -143,7 +143,7 @@ describe('domUtils', () => {
                 <style>* {bla: --123}</style>
             </head>
             `)
-            const rules = await page.evaluate(() => getAllRulesInDocument(document, e => e.getAttribute('id') !== 'something'))
+            const rules = await page.evaluate(() => getAllRules(document.documentElement, e => e.getAttribute('id') !== 'something'))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
         })
         
@@ -158,7 +158,7 @@ describe('domUtils', () => {
                 <style>* {bla: abc}</style>
             </body>
             `)
-            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            const rules = await page.evaluate(() => getAllRules(document.documentElement))
             expect(rules.map(r => r.value)).to.deep.equal(['sheker', 'bar', 'abc', '--123'])
         })
     })
@@ -179,7 +179,7 @@ describe('domUtils', () => {
             `)
 
             const style = await page.$eval('#test', element => {
-                    const rules = getAllRulesInDocument(document)
+                    const rules = getAllRules(document.documentElement)
                     return getRawComputedStyle(rules, <HTMLElement>element)
                 })
             

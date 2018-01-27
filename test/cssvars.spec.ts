@@ -35,7 +35,7 @@ describe('CSS Variables', () => {
             </body>
         `)
         const height = await page.evaluate(() => {
-            const cssVars = cssVariables({prefix: '$$', document})
+            const cssVars = cssVariables({prefix: '$$'})
             cssVars.once()
             return (<HTMLElement>document.querySelector('#test')).offsetHeight
         });
@@ -60,7 +60,7 @@ describe('CSS Variables', () => {
             </body>
         `)
         const height = await page.evaluate(() => {
-            const cssVars = cssVariables({prefix: '$$', document})
+            const cssVars = cssVariables({prefix: '$$'})
             cssVars.once()
             return (<HTMLElement>document.querySelector('#test')).offsetHeight
         });
@@ -85,7 +85,7 @@ describe('CSS Variables', () => {
             </body>
         `)
         const height = await page.evaluate(() => {
-            const cssVars = cssVariables({prefix: '$$', document})
+            const cssVars = cssVariables({prefix: '$$'})
             cssVars.once()
             return (<HTMLElement>document.querySelector('#test')).offsetHeight
         });

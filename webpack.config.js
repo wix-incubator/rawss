@@ -1,9 +1,11 @@
 'use strict';
 
 const path = require('path');
-
+const TypedocWebpackPlugin = require('typedoc-webpack-plugin');
+ 
 module.exports = {
     entry: {
+        index: path.resolve('src/index.ts'),
         engine: path.resolve('src/engine.ts'),
         rawss: path.resolve('src/rawss.ts'),
         cssvar: path.resolve('src/cssvar.ts'),
@@ -19,6 +21,11 @@ module.exports = {
         // Add '.ts' and '.tsx' as a resolvable extension.
         extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js']
     },
+    plugins: [
+        new TypedocWebpackPlugin({
+            readme: 'none'
+        }, ['./src/cssvar.ts', './src/rawss.ts', './src/index.ts'])
+    ],
     module: {
         loaders: [
             // all files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'

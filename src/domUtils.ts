@@ -24,18 +24,18 @@ function getStylesheetText(e: HTMLElement) {
     }
 }
 
-export function getAllRulesInDocument(document: HTMLDocument, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
-    const elementsWithStyleAttributes = document.querySelectorAll('[style]')
+export function getAllRules(rootElement: HTMLElement, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
+    const elementsWithStyleAttributes = rootElement.querySelectorAll('[style]')
     const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], []).reverse()
-    const styleTags = [].slice.call(document.querySelectorAll('style, link[rel="stylesheet"]')
+    const styleTags = [].slice.call(rootElement.querySelectorAll('style, link[rel="stylesheet"]')
         ).filter(filter)
         .reverse()
         .reduce((agg, e) => [...agg, ...parseStylesheet(getStylesheetText(e))], [])
     return [...inlineStyleRules, ...sortRulesBySpecificFirst(styleTags)]
 }
 
-export function waitForStylesToBeLoaded(document: HTMLDocument) {
-    const links = document.querySelectorAll('link[rel="stylesheet"]')
+export function waitForStylesToBeLoaded(rootElement: HTMLElement) {
+    const links = rootElement.querySelectorAll('link[rel="stylesheet"]')
     const linksWithoutStyles = [].filter.call(links, (link: HTMLLinkElement) => !loadedExternalStyles.has(link))
     return Promise.all(linksWithoutStyles.map(async (link: HTMLLinkElement) => {
        const response = await fetch(link.href, {headers: {'Content-Type': link.type}})
@@ -47,6 +47,6 @@ export function getRawComputedStyle(rules: RawStyleRule[], element: HTMLElement)
     return rules.reduce((style, rule: RawStyleRule) => style[rule.name] || !doesRuleApply(element, rule) ? style : {...style, [rule.name]: rule.value}, {})
 }
 
-export function getMatchingElements(document: HTMLDocument, rule: RawStyleRule)  : HTMLElement[] {
-    return typeof(rule.selector) === 'string' ? [].slice.call(document.querySelectorAll(rule.selector)) : [<HTMLElement>rule.selector]
+export function getMatchingElements(rootElement: HTMLElement, rule: RawStyleRule)  : HTMLElement[] {
+    return typeof(rule.selector) === 'string' ? [].slice.call(rootElement.querySelectorAll(rule.selector)) : [<HTMLElement>rule.selector]
 }

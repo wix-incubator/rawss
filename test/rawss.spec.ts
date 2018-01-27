@@ -4,8 +4,8 @@ import * as rawss from '../src/rawss';
 import * as engine from '../src/engine';
 import {RawStyleRule, RawStyle} from 'src/cssUtils'
 import * as express from 'express'
-const Rawss = rawss.Rawss
-const createStyleProcessor = engine.createStyleProcessor
+const createStyleResolver = engine.createStyleResolver
+const createRawss = rawss.createRawss
 describe('Rawcss', () => {
     let browser = null;
     let page : Page = null;
@@ -17,12 +17,12 @@ describe('Rawcss', () => {
         app = express()
         app.use(express.static('test/public'))
         server = app.listen(port)
-        page = await browser.newPage();
-        await page.goto(`http://localhost:${port}/index.html`)
-        page.on('console', (e, args) => console[e['_type']](e['_text']))
     })
 
     beforeEach(async () => {
+        page = await browser.newPage();
+        await page.goto(`http://localhost:${port}/index.html`)
+        page.on('console', (e, args) => console[e['_type']](e['_text']))
         await page.addScriptTag({path: 'dist/rawss.js'})
         await page.addScriptTag({path: 'dist/engine.js'})
     });
@@ -34,19 +34,19 @@ describe('Rawcss', () => {
     })
 
 
-    it('should register and process a rule using once()', async() => {
+    it('should register and resolve a rule using once()', async() => {
         await page.setContent(`
             <body>
                 <div id="test" style="height: three-pixels"></div>
             </body>
         `)
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
             })
             
-            const rawss = new Rawss(document)
+            const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.once()
             return (<HTMLElement>document.querySelector('#test')).offsetHeight
@@ -55,14 +55,14 @@ describe('Rawcss', () => {
         expect(height).to.equal(3)
     })
 
-    it('should register and process a rule using start()', async() => {
+    it('should register and resolve a rule using start()', async() => {
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })
             
-            const rawss = new Rawss(document)
+            const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
             document.body.innerHTML = '<div id="test" style="height: four-pixels"></div>'
@@ -76,14 +76,14 @@ describe('Rawcss', () => {
         expect(height).to.equal(4)
     })
 
-    it('should process several changes in a row', async() => {
+    it('should resolve several changes in a row', async() => {
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })
             
-            const rawss = new Rawss(document)
+            const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
             document.body.innerHTML = '<div id="test" style="height: 100px"></div>'
@@ -101,16 +101,15 @@ describe('Rawcss', () => {
         expect(height).to.equal(4)
     })
 
-    it('should process styles from external stylesheets', async() => {
+    it('should resolve styles from external stylesheets', async() => {
         await page.setContent('<head><style>#test { height: 30px; }</style><link rel="stylesheet" href="/test2.css" /></head><body />')
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
-            })
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+            })            
             
-            
-            const rawss = new Rawss(document)
+            const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
             document.body.innerHTML = '<div id="test"></div>'
@@ -125,21 +124,21 @@ describe('Rawcss', () => {
         expect(height).to.equal(4)
     })
 
-    it('should not process changes once stop is called', async() => {
+    it('should not resolve changes once pause() is called', async() => {
         const height = await page.evaluate(() => {
-            const proc = createStyleProcessor({
+            const proc = createStyleResolver({
                 match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                process: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
             })
             
-            const rawss = new Rawss(document)
+            const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
             document.body.innerHTML = '<div id="test" style="height: 100px"></div>'
 
             return new Promise(r => {
                 requestAnimationFrame(() => {
-                    rawss.stop()
+                    rawss.pause()
                     document.getElementById('test').setAttribute('style', 'height: 100px; height: four-pixels')
                     requestAnimationFrame(() => {
                         r((<HTMLElement>document.querySelector('#test')).offsetHeight)
