@@ -18,6 +18,12 @@ describe('cssUtils', () => {
         it('should parse multiple entries with the same name in the right order', () => {
             expect(parseDeclaration('foo:2; foo:1')).to.deep.equal([{name: 'foo', value: '2'}, {name: 'foo', value: '1'}])
         })
+        it('should parse an !important', () => {
+            expect(parseDeclaration('foo:2; foo:1 !important')).to.deep.equal([{name: 'foo', value: '2'}, {name: 'foo', value: '1', important: true}])
+        })
+        it('should parse several !important markers', () => {
+            expect(parseDeclaration('foo:2   !important ; foo:1 !important')).to.deep.equal([{name: 'foo', value: '2', important: true}, {name: 'foo', value: '1', important: true}])
+        })
         it('should treat whitespace correctly', () => {
             expect(parseDeclaration(`
                 foo:2; 
@@ -95,6 +101,26 @@ describe('cssUtils', () => {
             ])
         })
         
+        it('should put element specificity after selector with !important', () => {
+            expect(sortRulesBySpecificFirst([
+                {selector: '#id', name: '', value: '', important: true},
+                {selector: null, name: '', value: ''}
+            ])).to.deep.equal([
+                {selector: '#id', name: '', value: '', important: true},
+                {selector: null, name: '', value: ''}
+            ])
+        })
+        
+        it('should put element with !important before selector with !important', () => {
+            expect(sortRulesBySpecificFirst([
+                {selector: '#id', name: '', value: '', important: true},
+                {selector: null, name: '', value: '', important: true}
+            ])).to.deep.equal([
+                {selector: null, name: '', value: '', important: true},
+                {selector: '#id', name: '', value: '', important: true}
+            ])
+        })
+        
         it('should keep order for items with same specificity', () => {
             expect(sortRulesBySpecificFirst([
                 {selector: '#id', name: '', value: ''},
@@ -102,6 +128,16 @@ describe('cssUtils', () => {
             ])).to.deep.equal([
                 {selector: '#id', name: '', value: ''},
                 {selector: '#abc', name: '', value: ''}
+            ])
+        })
+        
+        it('should keep order for items with same specificity and priority', () => {
+            expect(sortRulesBySpecificFirst([
+                {selector: '#id', name: '', value: '', important: true},
+                {selector: '#abc', name: '', value: '', important: true}
+            ])).to.deep.equal([
+                {selector: '#id', name: '', value: '', important: true},
+                {selector: '#abc', name: '', value: '', important: true}
             ])
         })
         

@@ -3,11 +3,16 @@ import * as specificity from 'css-specificity'
 export interface RawStyleEntry {
     name: string;
     value: string;
+    important?: boolean;
 }
+
 export type RawStyle = { [prop: string]: string }
 
-const specificityComparator = (selector1: string | HTMLElement, selector2: string | HTMLElement) => {
-    const selectors = [selector1, selector2]
+const specificityComparator = (a: RawStyleRule, b: RawStyleRule) => {
+    if (a.important !== b.important) {
+        return b.important ? 1 : -1
+    }
+    const selectors = [a.selector, b.selector]
     const isString = selectors.map(s => typeof(s) === 'string')
     if (!isString[0]) {
         return -1;
@@ -39,12 +44,16 @@ function clearComments(css) {
 
 export function parseDeclaration(rawCss: string) : RawStyleDeclaration {
     const css = clearComments(rawCss)
-    const declarationRegex = /\s*([^;:\s]+)\s*:\s*([^;:]+)\s*;?\s*/
+    const declarationRegex = /\s*([^;:\s]+)\s*:\s*([^;:!]+)\s*(\!important)?;?\s*/
     let index = 0
     let parsed = null
     const declaration : RawStyleDeclaration = []
     while (parsed = css && declarationRegex.exec(css.substr(index))) {
-        declaration.push({name: parsed[1].trim(), value: parsed[2].trim()})
+        const entry : RawStyleEntry = {name: parsed[1].trim(), value: parsed[2].trim()}
+        if (parsed[3]) {
+            entry.important = true;
+        }
+        declaration.push(entry)
         index += parsed.index + parsed[0].length
     }
 
@@ -71,7 +80,7 @@ export function parseStylesheet(rawCss: string) : RawStyleRule[] {
 }
 
 export function sortRulesBySpecificFirst(rules: RawStyleRule[]) : RawStyleRule[] {
-    return rules.sort((a, b) => specificityComparator(a.selector, b.selector))
+    return rules.sort((a, b) => specificityComparator(a, b))
 }   
 
 
