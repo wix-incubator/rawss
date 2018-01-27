@@ -8,12 +8,15 @@ const doesRuleApply = domUtils.doesRuleApply
 const parseInlineStyle = domUtils.parseInlineStyle
 const getAllRulesInDocument = domUtils.getAllRulesInDocument
 const getRawComputedStyle = domUtils.getRawComputedStyle
+const waitForStylesLoaded = domUtils.waitForStylesLoaded
+
 describe('domUtils', () => {
     let browser = null;
     let page : Page = null;
     before(async() => browser = await launch())
     beforeEach(async () => {
         page = await browser.newPage();
+        page.on('console', (e, args) => console[e['_type']](e['_text']))
         await page.addScriptTag({path: 'dist/domUtils.js'})
     });
 
@@ -106,6 +109,31 @@ describe('domUtils', () => {
             `)
             const rules = await page.evaluate(() => getAllRulesInDocument(document))
             expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--123'}])                    
+        })
+        
+        it('should get rules from external style tags', async() => {
+            page.setRequestInterception(true)
+            page.on('error', e => console.error(e.stack))
+            page.on('request', req => {
+                if (!req['_url'].match(/\.css/)) {
+                    req.continue()
+                    return
+                }
+                req.respond({
+                    status: 200,
+                    contentType: 'text/css',
+                    body: '* {bla: --676}'
+                })
+            })
+
+            await page.setContent(`
+            <head>
+                <link rel="stylesheet" type="text/css" href="http://localhost/sheker.css" />
+            </head>
+            `)
+            await page.evaluate(() => waitForStylesLoaded(document))
+            const rules = await page.evaluate(() => getAllRulesInDocument(document))
+            expect(rules).to.deep.equal([{selector: '*', name: 'bla', value: '--676'}])                    
         })
         
         it('should filter out rules from managed style tags', async() => {
