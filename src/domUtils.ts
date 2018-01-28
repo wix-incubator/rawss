@@ -27,8 +27,10 @@ function getStylesheetText(e: HTMLElement) {
 export function getAllRules(rootElement: HTMLElement, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
     const elementsWithStyleAttributes = rootElement.querySelectorAll('[style]')
     const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], []).reverse()
-    const styleTags = [].slice.call(rootElement.querySelectorAll('style, link[rel="stylesheet"]')
-        ).filter(filter)
+    const styleTags = [].map.call(document.styleSheets, s => s.ownerNode).filter((n : HTMLElement) =>
+            n && 
+                (rootElement.compareDocumentPosition(rootElement) | Node.DOCUMENT_POSITION_CONTAINS) 
+                && filter(n))
         .reverse()
         .reduce((agg, e) => [...agg, ...parseStylesheet(getStylesheetText(e))], [])
     return [...inlineStyleRules, ...sortRulesBySpecificFirst(styleTags)]
