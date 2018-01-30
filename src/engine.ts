@@ -48,7 +48,7 @@ function issueID(element: HTMLElement, attrName) {
  */
 export type Engine = {
     run(resolver: StyleResolver[])
-    isManaging(e: Node)
+    isManaging(m: MutationRecord)
     waitForStylesToBeLoaded() : Promise<{}>
     cleanup()
 }
@@ -68,8 +68,8 @@ export function create(rootElement: HTMLElement) {
             headElement.removeChild(styleTag)
         },
 
-        isManaging(e: Node) {
-            return e === styleTag
+        isManaging(m: MutationRecord) {
+            return m.target === styleTag || m.attributeName === managerID
         },
 
         waitForStylesToBeLoaded() {
@@ -77,8 +77,8 @@ export function create(rootElement: HTMLElement) {
         },
 
         run: (resolvers: StyleResolver[]) => {
+            console.log("Run");
             const allRules = getAllRules(rootElement, element => element !== styleTag)
-            console.log(allRules)
             const cache = new WeakMap<HTMLElement, RawStyle>()
             function issueRawStyle(element: HTMLElement) {
                 if (cache.has(element)) {

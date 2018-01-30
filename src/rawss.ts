@@ -44,7 +44,7 @@ export function createRawss(rootElement: HTMLElement) : Rawss {
     }
 
     function resolve(mutations: MutationRecord[]) {
-        const relevantMutations = mutations.filter(m => !engine.isManaging(m.target))
+        const relevantMutations = mutations.filter(m => !engine.isManaging(m))
         if (!relevantMutations.length) {
             return
         }
