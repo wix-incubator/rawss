@@ -61,4 +61,3 @@ typings/
 yarn.lock
 .DS_Store
 package-lock.json
-docs
