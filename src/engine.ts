@@ -77,7 +77,6 @@ export function create(rootElement: HTMLElement) {
         },
 
         run: (resolvers: StyleResolver[]) => {
-            console.log("Run");
             const allRules = getAllRules(rootElement, element => element !== styleTag)
             const cache = new WeakMap<HTMLElement, RawStyle>()
             function issueRawStyle(element: HTMLElement) {

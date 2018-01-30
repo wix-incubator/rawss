@@ -41,7 +41,7 @@ describe('domUtils', () => {
         it('should return true for a simple rule', async () => {
             await page.setContent(`
             <body>
-                <div id="test" style="height: three-pixels"></div>
+                <div id="test" raw-style="height: three-pixels"></div>
             </body>
             `)
             const applies = await page.$eval('#test', (e : HTMLElement) => doesRuleApply(e, {selector: '#test', name: '', value: ''}))
@@ -50,7 +50,7 @@ describe('domUtils', () => {
         it('should return true for a wrong simple rule', async () => {
             await page.setContent(`
             <body>
-                <div id="test" style="height: three-pixels"></div>
+                <div id="test" raw-style="height: three-pixels"></div>
             </body>
             `)
             const applies = await page.$eval('#test', (e : HTMLElement) => doesRuleApply(e, {selector: '#wrong', name: '', value: ''}))
@@ -60,7 +60,7 @@ describe('domUtils', () => {
         it('should return true for a class rule', async () => {
             await page.setContent(`
             <body>
-                <div id="test" class="bla" style="height: three-pixels"></div>
+                <div id="test" class="bla" raw-"height: three-pixels"></div>
             </body>
             `)
             const applies = await page.$eval('#test', (e : HTMLElement) => doesRuleApply(e, {selector: '.bla', name: '', value: ''}))
@@ -71,7 +71,7 @@ describe('domUtils', () => {
         it('should return false for a wrong class rule', async () => {
             await page.setContent(`
             <body>
-                <div id="test" class="bla" style="height: three-pixels"></div>
+                <div id="test" class="bla" raw-style="height: three-pixels"></div>
             </body>
             `)
             const applies = await page.$eval('#test', (e : HTMLElement) => doesRuleApply(e, {selector: '.bla2', name: '', value: ''}))
@@ -82,7 +82,7 @@ describe('domUtils', () => {
         it('should return true for self inline-style rule', async () => {
             await page.setContent(`
             <body>
-                <div id="test" class="bla" style="height: three-pixels"></div>
+                <div id="test" class="bla" raw-style="height: three-pixels"></div>
             </body>
             `)
             const applies = await page.$eval('#test', (e : HTMLElement) => doesRuleApply(e, {selector: e, name: 'baz', value: 'bar'}))
@@ -94,7 +94,7 @@ describe('domUtils', () => {
         it('should parse the correct rule', async() => {
             await page.setContent(`
             <body>
-                <div id="test" class="bla" style="height: three-pixels"></div>
+                <div id="test" class="bla" raw-style="height: three-pixels"></div>
             </body>
             `)
             const inlineStyle: RawStyleRule[] = await page.$eval('#test', (e : HTMLElement) => {
@@ -109,7 +109,7 @@ describe('domUtils', () => {
         it('should get rules from inline styles', async() => {
             await page.setContent(`
             <body>
-                <div id="test" class="bla" style="height: three-pixels"></div>
+                <div id="test" class="bla" raw-style="height: three-pixels"></div>
             </body>
             `)
             const rules = await page.evaluate(() => getAllRules(document.documentElement).map(r => [(<HTMLElement>r.selector).id, r.name, r.value]))
@@ -154,7 +154,7 @@ describe('domUtils', () => {
                 <style>#id {foo:bar /*ok: not*/}</style>
             </head>
             <body>
-                <div id="test" class="bla" style="height: sheker"></div>
+                <div id="test" class="bla" raw-style="height: sheker"></div>
                 <style>* {bla: abc}</style>
             </body>
             `)
@@ -173,7 +173,7 @@ describe('domUtils', () => {
                 <style>#test2 {a:bar /*ok: not*/}</style>
             </head>
             <body>
-                <div id="test" class="bla" style="height: sheker"></div>
+                <div id="test" class="bla" raw-style="height: sheker"></div>
                 <style>.bla {width: 100px}</style>
             </body>
             `)

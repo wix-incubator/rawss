@@ -23,7 +23,7 @@ describe('Engine', () => {
     it('should register and resolve a simple rule', async() => {
         await page.setContent(`
             <body>
-                <div id="test" style="height: three-pixels"></div>
+                <div id="test" raw-style="height: three-pixels"></div>
             </body>
         `)
         const height = await page.evaluate(() => {
