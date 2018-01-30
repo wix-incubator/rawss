@@ -21,7 +21,7 @@ describe('domUtils', () => {
     before(async() => {
         browser = await launch({devtools: true})
         app = express()
-        app.use(express.static('test/public'))
+        app.use(express.static('test/fixtures'))
         server = app.listen(port)
     })
     beforeEach(async () => {

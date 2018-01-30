@@ -15,7 +15,7 @@ describe('Rawcss', () => {
     before(async() => {
         browser = await launch()
         app = express()
-        app.use(express.static('test/public'))
+        app.use(express.static('test/fixtures'))
         server = app.listen(port)
     })
 

@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+        <script src="/dist/cssvar.js"></script>
+        <script>
+            cssVariables().start()
+        </script>
+        <style id="base">
+            .box {
+                width: 100px;
+                height: 100px;
+                background: red;
+                display: inline-flex;
+                justify-content: center;
+                align-items: center;
+                margin: 20px;
+            }            
+
+            .box:after {
+                content: attr(id)
+            }
+
+        </style>
+
+        <style id="test-1">
+            #a {
+                --bg: green;
+                background: var(--bg);
+            }
+
+            #b {
+                --bg: green;
+            }
+
+            #c {
+                background: var(--bg);
+            }
+
+            #cont1 {
+                display: inline-block;
+                --bg: red;
+            }
+
+            .cont2 {
+                --bg: green;
+            }
+
+            .cont2 .box {
+                background: var(--bg);
+            }
+
+            #cont3 {
+                display: inline-block;
+                --bg: green;
+            }
+
+            .cont4 {
+                --bg1: red;     
+            }
+
+            #cont3 .cont4 > * {
+                background: var(--bg);
+            }
+    </style>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+        [bg="something"] {
+            --bg: green;
+        }
+    </style>
+    </head>
+    <body>
+        <div id="a" class="box"></div>
+        <div id="b" class="box" style="background: var(--bg)"></div>
+        <div id="c" class="box" style="--bg: green"></div>
+        <span id="cont1">
+            <span class="cont2">
+                <div id="d" class="box"></div>
+            </span>
+        </span>
+        <span id="cont3">
+                <span class="cont4">
+                    <div id="e" class="box"></div>
+                </span>
+        </span>
+        <div id="f" class="box" bg="green" style="background: var(--bg)"></div>
+        <div id="g" class="box" bg="something"></div>
+        <div id="h" class="box"></div>
+        <div id="i" class="box"></div>
+        <div id="j" class="box"></div>
+        <div id="k" class="box"></div>
+        <div id="l" class="box"></div>
+    </body>    
+</html>

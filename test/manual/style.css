@@ -1,0 +1,8 @@
+[bg="green"] {
+    --bg: green;
+}
+
+[bg="something"] {
+    --bg: red;
+    background: var(--bg);
+}

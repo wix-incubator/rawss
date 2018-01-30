@@ -23,7 +23,7 @@ module.exports = {
     },
     plugins: [
         new TypedocWebpackPlugin({
-            readme: 'none'
+            readme: 'none', out: '../docs'
         }, ['./src/cssvar.ts', './src/rawss.ts', './src/index.ts'])
     ],
     module: {
