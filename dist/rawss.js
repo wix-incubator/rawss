@@ -241,7 +241,7 @@ function doesRuleApply(element, rule) {
 }
 exports.doesRuleApply = doesRuleApply;
 function parseInlineStyle(element) {
-    return cssUtils_1.parseDeclaration(element.getAttribute('style')).map(function (_a) {
+    return cssUtils_1.parseDeclaration(element.hasAttribute('raw-style') ? element.getAttribute('raw-style') : element.getAttribute('style')).map(function (_a) {
         var name = _a.name, value = _a.value;
         return ({ name: name, value: value, selector: element });
     });
@@ -256,7 +256,7 @@ function getStylesheetText(e) {
 }
 function getAllRules(rootElement, filter) {
     if (filter === void 0) { filter = function () { return true; }; }
-    var elementsWithStyleAttributes = rootElement.querySelectorAll('[style]');
+    var elementsWithStyleAttributes = rootElement.querySelectorAll('[style],[raw-style]');
     var inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce(function (agg, element) { return agg.concat(parseInlineStyle(element)); }, []).reverse();
     var styleTags = [].map.call(document.styleSheets, function (s) { return s.ownerNode; }).filter(function (n) {
         return n &&
@@ -664,7 +664,6 @@ function create(rootElement) {
             return new Promise(function (r) { return domUtils_1.waitForStylesToBeLoaded(rootElement).then(function () { return r(); }); });
         },
         run: function (resolvers) {
-            console.log("Run");
             var allRules = domUtils_1.getAllRules(rootElement, function (element) { return element !== styleTag; });
             var cache = new WeakMap();
             function issueRawStyle(element) {
