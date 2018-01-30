@@ -7,12 +7,20 @@ export interface RawStyleEntry {
 }
 
 export type RawStyle = { [prop: string]: string }
+export type RawStyleDeclaration = RawStyleEntry[]
+export interface RawStyleRule extends RawStyleEntry {
+    selector: string | HTMLElement;
+}
 
-const specificityComparator = (a: RawStyleRule, b: RawStyleRule) => {
-    if (a.important !== b.important) {
-        return b.important ? 1 : -1
+interface RuleSorter {
+    rule: RawStyleRule
+    index: number
+}
+const specificityComparator = (a: RuleSorter, b: RuleSorter) => {
+    if (a.rule.important !== b.rule.important) {
+        return b.rule.important ? 1 : -1
     }
-    const selectors = [a.selector, b.selector]
+    const selectors = [a.rule.selector, b.rule.selector]
     const isString = selectors.map(s => typeof(s) === 'string')
     if (!isString[0]) {
         return -1;
@@ -28,13 +36,7 @@ const specificityComparator = (a: RawStyleRule, b: RawStyleRule) => {
         }
     }
 
-    return -1
-}
-
-export type RawStyleDeclaration = RawStyleEntry[]
-
-export interface RawStyleRule extends RawStyleEntry {
-    selector: string | HTMLElement;
+    return a.index - b.index
 }
 
 // yeah I know this doesn't cover strings. tough luck for now, not willing to integrate a full-blown parser, as it will reduce freedom
@@ -80,7 +82,10 @@ export function parseStylesheet(rawCss: string) : RawStyleRule[] {
 }
 
 export function sortRulesBySpecificFirst(rules: RawStyleRule[]) : RawStyleRule[] {
-    return rules.sort((a, b) => specificityComparator(a, b))
+    return rules
+        .map((rule, index) => ({rule, index}))
+        .sort(specificityComparator)
+        .map(e => e.rule)
 }   
 
 

@@ -33,8 +33,7 @@ export {getAllRules, getRawComputedStyle} from './domUtils'
 /**
  * @hidden
  */
-function issueID(element: HTMLElement, prefix = '') {
-    const attrName = `data-rawss-${prefix}id`
+function issueID(element: HTMLElement, attrName) {
     if (element.hasAttribute(attrName)) {
         return element.getAttribute(attrName)
     }
@@ -62,7 +61,7 @@ export function create(rootElement: HTMLElement) {
     const document = rootElement.ownerDocument
     const headElement = rootElement === document.documentElement ? document.head : rootElement;
     const styleTag = document.createElement('style')
-    const managerID = issueID(styleTag)
+    const managerID = issueID(styleTag, 'rawss')
     headElement.appendChild(styleTag)
     return {
         cleanup: () => {
@@ -79,6 +78,7 @@ export function create(rootElement: HTMLElement) {
 
         run: (resolvers: StyleResolver[]) => {
             const allRules = getAllRules(rootElement, element => element !== styleTag)
+            console.log(allRules)
             const cache = new WeakMap<HTMLElement, RawStyle>()
             function issueRawStyle(element: HTMLElement) {
                 if (cache.has(element)) {
@@ -108,9 +108,9 @@ export function create(rootElement: HTMLElement) {
         
             const kebabCase = string => string.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/\s+/g, '-').toLowerCase()
             let cssText = `
-    ${styleEntries.map(([element, style]) => `[data-rawss-${managerID}-id='${issueID(element, `${managerID}-`)}'] {${Object.keys(style).map(name => `
+    ${styleEntries.map(([element, style]) => `[${managerID}='${issueID(element, managerID)}'] {${Object.keys(style).map(name => `
         ${kebabCase(name)}: ${style[name]} !important;
-    `)}}`)}
+    `)}}`).join('\n')}
 `        
             styleTag.innerHTML = cssText
         }
