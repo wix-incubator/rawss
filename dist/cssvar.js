@@ -658,7 +658,7 @@ function create(rootElement) {
             headElement.removeChild(styleTag);
         },
         isManaging: function (m) {
-            return m.target === styleTag || m.attributeName === managerID;
+            return m.target === styleTag || m.target.parentElement === styleTag || m.attributeName === managerID;
         },
         waitForStylesToBeLoaded: function () {
             return new Promise(function (r) { return domUtils_1.waitForStylesToBeLoaded(rootElement).then(function () { return r(); }); });
