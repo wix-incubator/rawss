@@ -657,15 +657,15 @@ function create(rootElement) {
         cleanup: function () {
             headElement.removeChild(styleTag);
         },
-        isManaging: function (e) {
-            return e === styleTag;
+        isManaging: function (m) {
+            return m.target === styleTag || m.attributeName === managerID;
         },
         waitForStylesToBeLoaded: function () {
             return new Promise(function (r) { return domUtils_1.waitForStylesToBeLoaded(rootElement).then(function () { return r(); }); });
         },
         run: function (resolvers) {
+            console.log("Run");
             var allRules = domUtils_1.getAllRules(rootElement, function (element) { return element !== styleTag; });
-            console.log(allRules);
             var cache = new WeakMap();
             function issueRawStyle(element) {
                 if (cache.has(element)) {
@@ -962,7 +962,7 @@ function createRawss(rootElement) {
         engine.run(resolvers);
     }
     function resolve(mutations) {
-        var relevantMutations = mutations.filter(function (m) { return !engine.isManaging(m.target); });
+        var relevantMutations = mutations.filter(function (m) { return !engine.isManaging(m); });
         if (!relevantMutations.length) {
             return;
         }
