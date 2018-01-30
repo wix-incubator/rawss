@@ -69,7 +69,7 @@ export function create(rootElement: HTMLElement) {
         },
 
         isManaging(m: MutationRecord) {
-            return m.target === styleTag || m.attributeName === managerID
+            return m.target === styleTag || m.target.parentElement === styleTag || m.attributeName === managerID
         },
 
         waitForStylesToBeLoaded() {
