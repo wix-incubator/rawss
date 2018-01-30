@@ -18,8 +18,6 @@ Implement to apply raw style to real, valid style
 getRawStyle can return the raw, unfiltered style of any element
 
 ### Rawss: generic API for responding to any style change
-[API](https://wix.github.io/rawss/docs/modules/_rawss_.html)
-
 ### cssVariables: specific implementation for CSS variables polyfill
-[API](https://wix.github.io/rawss/docs/modules/_cssvar_.html)
+[API](https://wix.github.io/rawss/docs/)
 
