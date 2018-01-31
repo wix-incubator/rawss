@@ -6,6 +6,9 @@ Aiming for a fully functional polyfill for CSS variable
 * Write any CSS in any browser that supports mutation observers, and process it. 
 * Use CSS variables in any browser
 
+Open the demo in IE:
+[Demo](https://wix.github.io/rawss/test/manual/index.html)
+
 ## API
 const {Rawss, StyleProcessor, cssVariables} = require('rawss')
 
