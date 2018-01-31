@@ -30,7 +30,7 @@ describe('CSS Variables', () => {
             </head>
             <body>
                 <div id="container">
-                    <div id="test" raw-style="height: calc(var($$myVar) + 5px)"></div>
+                    <div id="test" data-style="height: calc(var($$myVar) + 5px)"></div>
                 </div>
             </body>
         `)
@@ -55,7 +55,7 @@ describe('CSS Variables', () => {
             </head>
             <body>
                 <div id="container">
-                    <div id="test" raw-style="height: calc(var($$var1) + 5px + var($$var2))"></div>
+                    <div id="test" data-style="height: calc(var($$var1) + 5px + var($$var2))"></div>
                 </div>
             </body>
         `)
@@ -80,7 +80,7 @@ describe('CSS Variables', () => {
             </head>
             <body>
                 <div id="container">
-                    <div id="test" raw-style="height: calc(var( $$var1) + 5px + var($$var2    ))"></div>
+                    <div id="test" data-style="height: calc(var( $$var1) + 5px + var($$var2    ))"></div>
                 </div>
             </body>
         `)

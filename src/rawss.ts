@@ -70,7 +70,7 @@ export function createRawss(rootElement: HTMLElement) : Rawss {
             attributes: true,
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true 
         })
     }
     

@@ -37,7 +37,7 @@ describe('Rawcss', () => {
     it('should register and resolve a rule using once()', async() => {
         await page.setContent(`
             <body>
-                <div id="test" raw-style="height: three-pixels"></div>
+                <div id="test" data-style="height: three-pixels"></div>
             </body>
         `)
         const height = await page.evaluate(() => {
@@ -65,7 +65,7 @@ describe('Rawcss', () => {
             const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
-            document.body.innerHTML = '<div id="test" raw-style="height: four-pixels"></div>'
+            document.body.innerHTML = '<div id="test" data-style="height: four-pixels"></div>'
             return new Promise(r => {
                 requestAnimationFrame(() => {
                     r((<HTMLElement>document.querySelector('#test')).offsetHeight)
@@ -86,11 +86,11 @@ describe('Rawcss', () => {
             const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
-            document.body.innerHTML = '<div id="test" raw-style="height: 100px"></div>'
+            document.body.innerHTML = '<div id="test" data-style="height: 100px"></div>'
 
             return new Promise(r => {
                 requestAnimationFrame(() => {
-                    document.getElementById('test').setAttribute('raw-style', 'height: 100px; height: four-pixels')
+                    document.getElementById('test').setAttribute('data-style', 'height: 100px; height: four-pixels')
                     requestAnimationFrame(() => {
                         r((<HTMLElement>document.querySelector('#test')).offsetHeight)
                     })
@@ -134,7 +134,7 @@ describe('Rawcss', () => {
             const rawss = createRawss(document.documentElement)
             rawss.add(proc)
             rawss.start()
-            document.body.innerHTML = '<div id="test" raw-style="height: 100px"></div>'
+            document.body.innerHTML = '<div id="test" data-style="height: 100px"></div>'
 
             return new Promise(r => {
                 requestAnimationFrame(() => {

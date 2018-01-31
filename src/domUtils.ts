@@ -12,7 +12,7 @@ export function doesRuleApply(element: HTMLElement, rule: RawStyleRule) {
 }
 
 export function parseInlineStyle(element: HTMLElement) : RawStyleRule[] {
-    return parseDeclaration(element.hasAttribute('raw-style') ? element.getAttribute('raw-style') : element.getAttribute('style')).map(({name, value}) => ({name, value, selector: element}))
+    return parseDeclaration(element.hasAttribute('data-style') ? element.getAttribute('data-style') : element.getAttribute('style')).map(({name, value}) => ({name, value, selector: element}))
 }
 
 const loadedExternalStyles = new WeakMap<HTMLElement, string>()
@@ -25,7 +25,7 @@ function getStylesheetText(e: HTMLElement) {
 }
 
 export function getAllRules(rootElement: HTMLElement, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
-    const elementsWithStyleAttributes = rootElement.querySelectorAll('[style],[raw-style]')
+    const elementsWithStyleAttributes = rootElement.querySelectorAll('[style],[data-style]')
     const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], []).reverse()
     const styleTags = [].map.call(document.styleSheets, s => s.ownerNode).filter((n : HTMLElement) =>
             n && 
