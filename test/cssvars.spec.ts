@@ -1,7 +1,7 @@
 import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import * as cssvar from '../src/cssvar';
-import {RawStyleRule, RawStyle} from 'src/cssUtils'
+import {AtomicStyleRule, AtomicStyle} from 'src/cssUtils'
 
 const cssVariables = cssvar.cssVariables
 

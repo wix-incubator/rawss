@@ -1,5 +1,5 @@
 import {Rawss, StyleResolver, createRawss} from './rawss'
-import { RawStyle, RawStyleRule } from './cssUtils';
+import { AtomicStyle, AtomicStyleRule } from './cssUtils';
 import { escape } from 'querystring';
 import { getRawComputedStyle } from './domUtils';
 
@@ -53,8 +53,8 @@ export function cssVariables(options: CssVariablesOptions = {rootElement: window
     const DECLARE_REGEX = new RegExp(`${prefix}\\w+$`)
     const USE_REGEX = new RegExp(`var\\(\\s*${prefix}(\\w+)\\s*\\)`)
 
-    function resolve(element: HTMLElement, getRawStyle: (e: HTMLElement) => RawStyle) : Partial<CSSStyleDeclaration> {
-        const style = getRawStyle(element)
+    function resolve(element: HTMLElement, getAtomicStyle: (e: HTMLElement) => AtomicStyle) : Partial<CSSStyleDeclaration> {
+        const style = getAtomicStyle(element)
         return Object.keys(style).reduce((newStyle, key) => {
             let value = style[key]
             let index = 0;
@@ -66,7 +66,7 @@ export function cssVariables(options: CssVariablesOptions = {rootElement: window
                 let resolvedValue : string = style[attrName]
                 if (!resolvedValue) {
                     for (let e = element.parentElement; e && !resolvedValue; e = e.parentElement) {
-                        resolvedValue = getRawStyle(e)[attrName]
+                        resolvedValue = getAtomicStyle(e)[attrName]
                     }
                 }
 
@@ -83,7 +83,7 @@ export function cssVariables(options: CssVariablesOptions = {rootElement: window
         }, {})
     }
 
-    function match(rule: RawStyleRule) : boolean {
+    function match(rule: AtomicStyleRule) : boolean {
         return !!rule.value.match(USE_REGEX)
     }
 

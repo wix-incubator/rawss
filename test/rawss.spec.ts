@@ -2,7 +2,7 @@ import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import * as rawss from '../src/rawss';
 import * as engine from '../src/engine';
-import {RawStyleRule, RawStyle} from 'src/cssUtils'
+import {AtomicStyleRule, AtomicStyle} from 'src/cssUtils'
 import * as express from 'express'
 const createStyleResolver = engine.createStyleResolver
 const createRawss = rawss.createRawss
@@ -42,8 +42,8 @@ describe('Rawcss', () => {
         `)
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'three-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'three-pixels' ? '3px' : AtomicStyle[key],  ...style}), {}))
             })
             
             const rawss = createRawss(document.documentElement)
@@ -58,8 +58,8 @@ describe('Rawcss', () => {
     it('should register and resolve a rule using start()', async() => {
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'four-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'four-pixels' ? '4px' : AtomicStyle[key],  ...style}), {}))
             })
             
             const rawss = createRawss(document.documentElement)
@@ -79,8 +79,8 @@ describe('Rawcss', () => {
     it('should resolve several changes in a row', async() => {
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'four-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'four-pixels' ? '4px' : AtomicStyle[key],  ...style}), {}))
             })
             
             const rawss = createRawss(document.documentElement)
@@ -105,8 +105,8 @@ describe('Rawcss', () => {
         await page.setContent('<head><style>#test { height: 30px; }</style><link rel="stylesheet" href="/test2.css" /></head><body />')
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'four-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'four-pixels' ? '4px' : AtomicStyle[key],  ...style}), {}))
             })            
             
             const rawss = createRawss(document.documentElement)
@@ -127,8 +127,8 @@ describe('Rawcss', () => {
     it('should not resolve changes once pause() is called', async() => {
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'four-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'four-pixels' ? '4px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'four-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'four-pixels' ? '4px' : AtomicStyle[key],  ...style}), {}))
             })
             
             const rawss = createRawss(document.documentElement)

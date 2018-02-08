@@ -1,19 +1,19 @@
 import * as specificity from 'css-specificity'
-
-export interface RawStyleEntry {
+import * as expand from 'css-shorthand-expand'
+export interface AtomicStyleEntry {
     name: string;
     value: string;
     important?: boolean;
 }
 
-export type RawStyle = { [prop: string]: string }
-export type RawStyleDeclaration = RawStyleEntry[]
-export interface RawStyleRule extends RawStyleEntry {
+export type AtomicStyle = { [prop: string]: string }
+export type AtomicStyleDeclaration = AtomicStyleEntry[]
+export interface AtomicStyleRule extends AtomicStyleEntry {
     selector: string | HTMLElement;
 }
 
 interface RuleSorter {
-    rule: RawStyleRule
+    rule: AtomicStyleRule
     index: number
 }
 const specificityComparator = (a: RuleSorter, b: RuleSorter) => {
@@ -44,25 +44,26 @@ function clearComments(css) {
     return css.replace(/\/(\*(.|[\r\n])*?\*\/)|(\/[^\n]*)/ig, '')
 }
 
-export function parseDeclaration(rawCss: string) : RawStyleDeclaration {
+export function parseDeclaration(rawCss: string) : AtomicStyleDeclaration {
     const css = clearComments(rawCss)
     const declarationRegex = /\s*([^;:\s]+)\s*:\s*([^;:!]+)\s*(\!important)?;?\s*/
     let index = 0
     let parsed = null
-    const declaration : RawStyleDeclaration = []
+    let declaration : AtomicStyleDeclaration = []
     while (parsed = css && declarationRegex.exec(css.substr(index))) {
-        const entry : RawStyleEntry = {name: parsed[1].trim(), value: parsed[2].trim()}
-        if (parsed[3]) {
-            entry.important = true;
-        }
-        declaration.push(entry)
+        const name = parsed[1].trim()
+        const value = parsed[2].trim()
+        const important = !!parsed[3]
+        const expanded = expand(name, value) || {[name]: value}
+        const entries = Object.keys(expanded).map(name => (Object.assign({name, value: expanded[name]}, important && {important})))
+        declaration = [...declaration, ...entries]
         index += parsed.index + parsed[0].length
     }
 
     return declaration
 }
 
-export function parseStylesheet(rawCss: string) : RawStyleRule[] {
+export function parseStylesheet(rawCss: string) : AtomicStyleRule[] {
     if (!rawCss) {
         return []
     }
@@ -70,7 +71,7 @@ export function parseStylesheet(rawCss: string) : RawStyleRule[] {
     const ruleRegex = /([^{}]+){([^{}]+)}/
     let index = 0
     let parsed = null
-    let rules : RawStyleRule[] = []
+    let rules : AtomicStyleRule[] = []
     while (parsed = css && ruleRegex.exec(css.substr(index))) {
         const selector = parsed[1].trim()
         const style = parseDeclaration(parsed[2])
@@ -81,7 +82,7 @@ export function parseStylesheet(rawCss: string) : RawStyleRule[] {
     return rules
 }
 
-export function sortRulesBySpecificFirst(rules: RawStyleRule[]) : RawStyleRule[] {
+export function sortRulesBySpecificFirst(rules: AtomicStyleRule[]) : AtomicStyleRule[] {
     return rules
         .map((rule, index) => ({rule, index}))
         .sort(specificityComparator)

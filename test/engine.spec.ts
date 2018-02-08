@@ -2,7 +2,7 @@ import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import * as engine from '../src/engine';
 import {readFileSync} from 'fs'
-import {RawStyleRule, RawStyle} from 'src/cssUtils'
+import {AtomicStyleRule, AtomicStyle} from 'src/cssUtils'
 
 const create = engine.create
 const createStyleResolver = engine.createStyleResolver
@@ -28,8 +28,8 @@ describe('Engine', () => {
         `)
         const height = await page.evaluate(() => {
             const proc = createStyleResolver({
-                match: (styleRule : RawStyleRule) =>  styleRule.value === 'three-pixels',
-                resolve: (rawStyle : RawStyle, element: HTMLElement) => (Object.keys(rawStyle).reduce((style, key) => ({[key] : rawStyle[key] === 'three-pixels' ? '3px' : rawStyle[key],  ...style}), {}))
+                match: (styleRule : AtomicStyleRule) =>  styleRule.value === 'three-pixels',
+                resolve: (AtomicStyle : AtomicStyle, element: HTMLElement) => (Object.keys(AtomicStyle).reduce((style, key) => ({[key] : AtomicStyle[key] === 'three-pixels' ? '3px' : AtomicStyle[key],  ...style}), {}))
             })
             
             create(document.documentElement).run([proc])

@@ -1,9 +1,9 @@
-import {RawStyleRule, RawStyleDeclaration, parseDeclaration, sortRulesBySpecificFirst, parseStylesheet} from './cssUtils'
+import {AtomicStyleRule, AtomicStyleDeclaration, parseDeclaration, sortRulesBySpecificFirst, parseStylesheet} from './cssUtils'
 export function matches(e: HTMLElement, selector: string) {
     return (e.matches || e.msMatchesSelector).call(e, selector)
 }
 
-export function doesRuleApply(element: HTMLElement, rule: RawStyleRule) {
+export function doesRuleApply(element: HTMLElement, rule: AtomicStyleRule) {
     if (rule.selector instanceof HTMLElement) {
         return element === rule.selector
     }
@@ -11,7 +11,7 @@ export function doesRuleApply(element: HTMLElement, rule: RawStyleRule) {
     return matches(element, <string>rule.selector)
 }
 
-export function parseInlineStyle(element: HTMLElement) : RawStyleRule[] {
+export function parseInlineStyle(element: HTMLElement) : AtomicStyleRule[] {
     return parseDeclaration(element.hasAttribute('data-style') ? element.getAttribute('data-style') : element.getAttribute('style')).map(({name, value}) => ({name, value, selector: element}))
 }
 
@@ -24,7 +24,7 @@ function getStylesheetText(e: HTMLElement) {
     }
 }
 
-export function getAllRules(rootElement: HTMLElement, filter: ((e: HTMLElement) => boolean) = () => true) : RawStyleRule[] {
+export function getAllRules(rootElement: HTMLElement, filter: ((e: HTMLElement) => boolean) = () => true) : AtomicStyleRule[] {
     const elementsWithStyleAttributes = rootElement.querySelectorAll('[style],[data-style]')
     const inlineStyleRules = [].filter.call(elementsWithStyleAttributes, filter).reduce((agg, element) => [...agg, ...parseInlineStyle(element)], []).reverse()
     const styleTags = [].map.call(document.styleSheets, s => s.ownerNode).filter((n : HTMLElement) =>
@@ -45,10 +45,10 @@ export function waitForStylesToBeLoaded(rootElement: HTMLElement) {
     }))
 }
 
-export function getRawComputedStyle(rules: RawStyleRule[], element: HTMLElement) : {[name: string]: string} {
-    return rules.reduce((style, rule: RawStyleRule) => style[rule.name] || !doesRuleApply(element, rule) ? style : {...style, [rule.name]: rule.value}, {})
+export function getRawComputedStyle(rules: AtomicStyleRule[], element: HTMLElement) : {[name: string]: string} {
+    return rules.reduce((style, rule: AtomicStyleRule) => style[rule.name] || !doesRuleApply(element, rule) ? style : {...style, [rule.name]: rule.value}, {})
 }
 
-export function getMatchingElements(rootElement: HTMLElement, rule: RawStyleRule)  : HTMLElement[] {
+export function getMatchingElements(rootElement: HTMLElement, rule: AtomicStyleRule)  : HTMLElement[] {
     return typeof(rule.selector) === 'string' ? [].slice.call(rootElement.querySelectorAll(rule.selector)) : [<HTMLElement>rule.selector]
 }

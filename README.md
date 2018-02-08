@@ -16,9 +16,9 @@ const {Rawss, StyleProcessor, cssVariables} = require('rawss')
 * match({name, value, selector}): boolean
 Implement to specify which style declarations apply to your processor
 
-* process(element, getRawStyle): CSSStyleDeclaration
+* process(element, getAtomicStyle): CSSStyleDeclaration
 Implement to apply raw style to real, valid style
-getRawStyle can return the raw, unfiltered style of any element
+getAtomicStyle can return the raw, unfiltered style of any element
 
 ### Rawss: generic API for responding to any style change
 ### cssVariables: specific implementation for CSS variables polyfill

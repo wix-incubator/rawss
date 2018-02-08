@@ -1,5 +1,5 @@
 import { getAllRules, getMatchingElements, getRawComputedStyle, matches, waitForStylesToBeLoaded } from './domUtils';
-import { RawStyleRule, RawStyleDeclaration, RawStyle } from './cssUtils'
+import { AtomicStyleRule, AtomicStyleDeclaration, AtomicStyle } from './cssUtils'
 import * as shortid from 'shortid'
 
 /**
@@ -8,10 +8,10 @@ import * as shortid from 'shortid'
 export interface StyleResolver {
     /**
      * @param element: Element to resolve style for
-     * @param getRawStyle: receive any raw style for an element
+     * @param getAtomicStyle: receive any raw style for an element
      */
-    resolve: (element: HTMLElement, getRawStyle: (HTMLElement) => RawStyle) => Partial<CSSStyleDeclaration>
-    match: (rule: RawStyleRule) => boolean
+    resolve: (element: HTMLElement, getAtomicStyle: (HTMLElement) => AtomicStyle) => Partial<CSSStyleDeclaration>
+    match: (rule: AtomicStyleRule) => boolean
 }
 
 /**
@@ -20,7 +20,7 @@ export interface StyleResolver {
  */
 export function createStyleResolver({resolve, match}) : StyleResolver {
     return {
-        resolve: (element, getRawStyle) => resolve(getRawStyle(element), element),
+        resolve: (element, getAtomicStyle) => resolve(getAtomicStyle(element), element),
         match
     }
 }
@@ -78,8 +78,8 @@ export function create(rootElement: HTMLElement) {
 
         run: (resolvers: StyleResolver[]) => {
             const allRules = getAllRules(rootElement, element => element !== styleTag)
-            const cache = new WeakMap<HTMLElement, RawStyle>()
-            function issueRawStyle(element: HTMLElement) {
+            const cache = new WeakMap<HTMLElement, AtomicStyle>()
+            function issueAtomicStyle(element: HTMLElement) {
                 if (cache.has(element)) {
                     return cache.get(element);
                 }
@@ -97,7 +97,7 @@ export function create(rootElement: HTMLElement) {
                         .reduce((els, rule) => [...els, ...getMatchingElements(rootElement, rule)], []))
         
                     .forEach(element => {
-                        const newStyle = resolver.resolve(element, issueRawStyle);
+                        const newStyle = resolver.resolve(element, issueAtomicStyle);
                         styleChanges.set(element, Object.assign({}, styleChanges.get(element), newStyle))
                     })
             })

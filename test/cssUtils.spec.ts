@@ -24,6 +24,22 @@ describe('cssUtils', () => {
         it('should parse several !important markers', () => {
             expect(parseDeclaration('foo:2   !important ; foo:1 !important')).to.deep.equal([{name: 'foo', value: '2', important: true}, {name: 'foo', value: '1', important: true}])
         })
+        it('should expand shorthand properties', () => {
+            expect(parseDeclaration(`border: 1px solid black`)).to.deep.equal([
+                {name: 'border-top-width', value: '1px'},
+                {name: 'border-right-width', value: '1px'},
+                {name: 'border-bottom-width', value: '1px'},
+                {name: 'border-left-width', value: '1px'},
+                {name: 'border-top-style', value: 'solid'},
+                {name: 'border-right-style', value: 'solid'},
+                {name: 'border-bottom-style', value: 'solid'},
+                {name: 'border-left-style', value: 'solid'},
+                {name: 'border-top-color', value: 'black'},
+                {name: 'border-right-color', value: 'black'},
+                {name: 'border-bottom-color', value: 'black'},
+                {name: 'border-left-color', value: 'black'}
+            ])
+        })
         it('should treat whitespace correctly', () => {
             expect(parseDeclaration(`
                 foo:2; 

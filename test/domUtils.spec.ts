@@ -2,7 +2,7 @@ import {expect} from 'chai'
 import {launch, Page} from 'puppeteer'
 import {readFileSync} from 'fs'
 import * as domUtils from '../src/domUtils';
-import { RawStyleRule } from 'src/cssUtils';
+import { AtomicStyleRule } from 'src/cssUtils';
 import * as express from 'express'
 
 const doesRuleApply = domUtils.doesRuleApply
@@ -97,7 +97,7 @@ describe('domUtils', () => {
                 <div id="test" class="bla" data-style="height: three-pixels"></div>
             </body>
             `)
-            const inlineStyle: RawStyleRule[] = await page.$eval('#test', (e : HTMLElement) => {
+            const inlineStyle: AtomicStyleRule[] = await page.$eval('#test', (e : HTMLElement) => {
                 const rules = parseInlineStyle(e)
                 return rules.map(r => [(<HTMLElement>r.selector).id, r.name, r.value])
             })
