@@ -9,6 +9,7 @@ module.exports = {
         engine: path.resolve('src/engine.ts'),
         rawss: path.resolve('src/rawss.ts'),
         cssvar: path.resolve('src/cssvar.ts'),
+        csspaint: path.resolve('src/csspaint.ts'),
         domUtils: path.resolve('src/domUtils.ts')
     },
     output: {

@@ -1,0 +1,25 @@
+<html>
+<head>
+    <script src="../../dist/csspaint.js"></script>
+    <script>
+        cssPaint().start()
+    </script>
+    <style>
+        #container {
+          /* The paint worklet subscribes to changes of these custom properties. */
+          --checkerboard-spacing: 10;
+          --checkerboard-size: 32;
+          background-image: paint(checkerboard);
+          width: 128px;
+          height: 128px;
+        }
+      </style>
+      <script>
+        CSS.paintWorklet.addModule('checkerboard.js');
+      </script>
+</head>
+<body>
+    <div id="container">
+    </div>
+</body>
+</html>
